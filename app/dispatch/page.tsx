@@ -270,6 +270,13 @@ export default async function DispatchPage() {
               Live
             </div>
 
+             <Link
+  className="secondary-button button-link"
+  href="/activity"
+>
+  View Activity
+</Link>
+
             <Link
   className="secondary-button button-link"
   href="/tv"
