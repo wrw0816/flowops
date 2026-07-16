@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import AppShell from "@/components/AppShell";
 
 type AppointmentStatus =
   | "scheduled"
@@ -131,91 +132,7 @@ export default async function AppointmentsPage() {
   );
 
   return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div>
-          <div className="brand">
-            <div className="brand-mark">F</div>
-
-            <div>
-              <div className="brand-name">FlowOps</div>
-              <div className="brand-subtitle">
-                Service Operations
-              </div>
-            </div>
-          </div>
-
-          <nav className="nav">
-  <Link className="nav-item" href="/">
-    <span>▦</span>
-    Command Center
-  </Link>
-
-  <Link className="nav-item" href="/dispatch">
-    <span>⇄</span>
-    Dispatch Board
-  </Link>
-
-  <Link className="nav-item" href="/repair-orders">
-    <span>▤</span>
-    Repair Orders
-  </Link>
-
-  <Link className="nav-item" href="/appointments">
-    <span>◷</span>
-    Appointments
-  </Link>
-
-  <Link className="nav-item" href="/technicians">
-    <span>●</span>
-    Technicians
-  </Link>
-
-  <Link className="nav-item" href="/tv">
-    <span>▥</span>
-    TV Mode
-  </Link>
-
-  <Link className="nav-item" href="/activity">
-    <span>↻</span>
-    Activity
-  </Link>
-
-  <Link className="nav-item" href="/analytics">
-    <span>⌁</span>
-    Analytics
-  </Link>
-
-  <Link className="nav-item" href="/production">
-    <span>◎</span>
-    Production
-  </Link>
-</nav>
-        </div>
-
-        <div className="sidebar-bottom">
-          <a className="nav-item" href="#">
-            <span>⚙</span>
-            Shop Settings
-          </a>
-
-          <div className="shop-card">
-            <div className="shop-icon">AA</div>
-
-            <div>
-              <div className="shop-name">
-                Alderman Automotive
-              </div>
-
-              <div className="shop-location">
-                Primary location
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <section className="content">
+  <AppShell activePage="appointments">
         <header className="topbar">
           <div>
             <p className="eyebrow">Today&apos;s Schedule</p>
@@ -361,7 +278,6 @@ export default async function AppointmentsPage() {
             ) : null}
           </div>
         </section>
-      </section>
-    </main>
+      </AppShell>
   );
 }

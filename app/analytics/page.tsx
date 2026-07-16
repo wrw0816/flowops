@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveShopId } from "@/lib/shop-context";
 import { getServerTimestamp } from "@/lib/server-time";
+import AppShell from "@/components/AppShell";
 
 type RepairOrderStatus =
   | "scheduled"
@@ -23,13 +24,6 @@ type TechnicianStatus =
   | "waiting"
   | "available"
   | "off";
-
-type Shop = {
-  id: string;
-  name: string;
-  shop_code: string | null;
-  location_name: string | null;
-};
 
 type RepairOrder = {
   id: string;
@@ -231,16 +225,10 @@ export default async function AnalyticsPage() {
   const currentTimestamp = getServerTimestamp();
 
   const [
-    { data: shopData, error: shopError },
     { data: repairOrderData, error: repairOrderError },
     { data: technicianData, error: technicianError },
     { data: eventData, error: eventError },
   ] = await Promise.all([
-    supabase
-      .from("shops")
-      .select("id, name, shop_code, location_name")
-      .eq("id", shopId)
-      .single(),
     supabase
       .from("repair_orders")
       .select(`
@@ -287,14 +275,6 @@ export default async function AnalyticsPage() {
       .limit(1000),
   ]);
 
-  if (shopError || !shopData) {
-    throw new Error(
-      `Unable to load shop settings: ${
-        shopError?.message ?? "Shop not found"
-      }`,
-    );
-  }
-
   if (repairOrderError) {
     throw new Error(
       `Unable to load repair orders: ${repairOrderError.message}`,
@@ -313,7 +293,6 @@ export default async function AnalyticsPage() {
     );
   }
 
-  const shop = shopData as Shop;
 
   const repairOrders =
     (repairOrderData ?? []) as RepairOrder[];
@@ -539,97 +518,8 @@ export default async function AnalyticsPage() {
     .slice(0, 10);
 
   return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div>
-          <div className="brand">
-            <div className="brand-mark">F</div>
-
-            <div>
-              <div className="brand-name">
-                FlowOps
-              </div>
-
-              <div className="brand-subtitle">
-                Service Operations
-              </div>
-            </div>
-          </div>
-
-          <nav className="nav">
-  <Link className="nav-item" href="/">
-    <span>▦</span>
-    Command Center
-  </Link>
-
-  <Link className="nav-item" href="/dispatch">
-    <span>⇄</span>
-    Dispatch Board
-  </Link>
-
-  <Link className="nav-item" href="/repair-orders">
-    <span>▤</span>
-    Repair Orders
-  </Link>
-
-  <Link className="nav-item" href="/appointments">
-    <span>◷</span>
-    Appointments
-  </Link>
-
-  <Link className="nav-item" href="/technicians">
-    <span>●</span>
-    Technicians
-  </Link>
-
-  <Link className="nav-item" href="/tv">
-    <span>▥</span>
-    TV Mode
-  </Link>
-
-  <Link className="nav-item" href="/activity">
-    <span>↻</span>
-    Activity
-  </Link>
-
-  <Link className="nav-item" href="/analytics">
-    <span>⌁</span>
-    Analytics
-  </Link>
-
-  <Link className="nav-item" href="/production">
-    <span>◎</span>
-    Production
-  </Link>
-</nav>
-        </div>
-
-        <div className="sidebar-bottom">
-          <Link className="nav-item" href="/settings">
-            <span>⚙</span>
-            Shop Settings
-          </Link>
-
-          <div className="shop-card">
-            <div className="shop-icon">
-              {shop.shop_code ?? "AA"}
-            </div>
-
-            <div>
-              <div className="shop-name">
-                {shop.name}
-              </div>
-
-              <div className="shop-location">
-                {shop.location_name ?? "Primary location"}
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <section className="content">
-        <header className="topbar">
+  <AppShell activePage="analytics">
+    <header className="topbar">
           <div>
             <p className="eyebrow">
               Dispatch Performance
@@ -920,8 +810,7 @@ export default async function AnalyticsPage() {
               ) : null}
             </div>
           </aside>
-        </section>
       </section>
-    </main>
+    </AppShell>
   );
 }

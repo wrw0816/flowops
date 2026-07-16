@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveShopId } from "@/lib/shop-context";
 import { getServerTimestamp } from "@/lib/server-time";
+import AppShell from "@/components/AppShell";
 
 type TechnicianStatus =
   | "working"
@@ -59,8 +60,6 @@ type Appointment = {
 type Shop = {
   id: string;
   name: string;
-  shop_code: string | null;
-  location_name: string | null;
   daily_labor_goal: number | string;
   daily_labor_sales_goal: number | string;
   daily_gross_profit_goal: number | string;
@@ -229,8 +228,6 @@ export default async function Home() {
       .select(`
         id,
         name,
-        shop_code,
-        location_name,
         daily_labor_goal,
         daily_labor_sales_goal,
         daily_gross_profit_goal,
@@ -602,127 +599,8 @@ export default async function Home() {
   const topActions = urgentActions.slice(0, 3);
 
   return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div>
-          <div className="brand">
-            <div className="brand-mark">F</div>
-
-            <div>
-              <div className="brand-name">
-                FlowOps
-              </div>
-
-              <div className="brand-subtitle">
-                Service Operations
-              </div>
-            </div>
-          </div>
-
-          <nav className="nav">
-            <Link
-              className="nav-item active"
-              href="/"
-            >
-              <span>▦</span>
-              Command Center
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/dispatch"
-            >
-              <span>⇄</span>
-              Dispatch Board
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/repair-orders"
-            >
-              <span>▤</span>
-              Repair Orders
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/appointments"
-            >
-              <span>◷</span>
-              Appointments
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/technicians"
-            >
-              <span>●</span>
-              Technicians
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/tv"
-            >
-              <span>▥</span>
-              TV Mode
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/activity"
-            >
-              <span>↻</span>
-              Activity
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/analytics"
-            >
-              <span>⌁</span>
-              Analytics
-            </Link>
-
-            <Link
-              className="nav-item"
-              href="/production"
-            >
-              <span>◎</span>
-              Production
-            </Link>
-          </nav>
-        </div>
-
-        <div className="sidebar-bottom">
-          <Link
-            className="nav-item"
-            href="/settings"
-          >
-            <span>⚙</span>
-            Shop Settings
-          </Link>
-
-          <div className="shop-card">
-            <div className="shop-icon">
-              {shop.shop_code ?? "AA"}
-            </div>
-
-            <div>
-              <div className="shop-name">
-                {shop.name}
-              </div>
-
-              <div className="shop-location">
-                {shop.location_name ?? "Primary location"}
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <section className="content">
-        <header className="topbar">
+  <AppShell activePage="command-center"> 
+          <header className="topbar">
           <div>
             <p className="eyebrow">
               {formatDateHeading()}
@@ -1329,8 +1207,7 @@ export default async function Home() {
               Approval, parts or information
             </small>
           </article>
-        </section>
       </section>
-    </main>
-  );
+  </AppShell>
+);
 }
