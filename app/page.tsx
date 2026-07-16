@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveShopId } from "@/lib/shop-context";
+import { getServerTimestamp } from "@/lib/server-time";
 
 type TechnicianStatus =
   | "working"
@@ -57,6 +59,8 @@ type Appointment = {
 type Shop = {
   id: string;
   name: string;
+  shop_code: string | null;
+  location_name: string | null;
   daily_labor_goal: number | string;
   daily_labor_sales_goal: number | string;
   daily_gross_profit_goal: number | string;
@@ -149,7 +153,10 @@ function formatElapsed(minutes: number) {
     : `${hours}h`;
 }
 
-function formatWaitingTime(waitingSince: string) {
+function formatWaitingTime(
+  waitingSince: string,
+  currentTimestamp: number,
+) {
   const start = new Date(waitingSince).getTime();
 
   if (Number.isNaN(start)) {
@@ -158,7 +165,7 @@ function formatWaitingTime(waitingSince: string) {
 
   const minutes = Math.max(
     0,
-    Math.floor((Date.now() - start) / 60000),
+    Math.floor((currentTimestamp - start) / 60000),
   );
 
   return formatElapsed(minutes);
@@ -203,6 +210,8 @@ function priorityLabel(
 
 export default async function Home() {
   const supabase = await createClient();
+  const shopId = getActiveShopId();
+  const currentTimestamp = getServerTimestamp();
   const today = getTodayDate();
 
   const startOfDay = new Date(`${today}T00:00:00`);
@@ -220,6 +229,8 @@ export default async function Home() {
       .select(`
         id,
         name,
+        shop_code,
+        location_name,
         daily_labor_goal,
         daily_labor_sales_goal,
         daily_gross_profit_goal,
@@ -227,8 +238,7 @@ export default async function Home() {
         target_elr,
         labor_gross_profit_percent
       `)
-      .eq("name", "Alderman Automotive")
-      .limit(1)
+      .eq("id", shopId)
       .single(),
 
     supabase
@@ -246,8 +256,8 @@ export default async function Home() {
         discounts,
         updated_at
       `)
+      .eq("shop_id", shopId)
       .eq("production_date", today)
-      .limit(1)
       .maybeSingle(),
 
     supabase
@@ -268,6 +278,7 @@ export default async function Home() {
         display_order,
         status_changed_at
       `)
+      .eq("shop_id", shopId)
       .eq("active", true)
       .order("display_order", { ascending: true }),
 
@@ -285,6 +296,7 @@ export default async function Home() {
         promised_at,
         assigned_technician_id
       `)
+      .eq("shop_id", shopId)
       .neq("status", "closed")
       .order("waiting_since", { ascending: true }),
 
@@ -299,6 +311,7 @@ export default async function Home() {
         appointment_at,
         estimated_hours
       `)
+      .eq("shop_id", shopId)
       .gte("appointment_at", startOfDay.toISOString())
       .lte("appointment_at", endOfDay.toISOString())
       .not(
@@ -682,17 +695,17 @@ export default async function Home() {
         </div>
 
         <div className="sidebar-bottom">
-          <a
+          <Link
             className="nav-item"
-            href="#"
+            href="/settings"
           >
             <span>⚙</span>
             Shop Settings
-          </a>
+          </Link>
 
           <div className="shop-card">
             <div className="shop-icon">
-              AA
+              {shop.shop_code ?? "AA"}
             </div>
 
             <div>
@@ -701,7 +714,7 @@ export default async function Home() {
               </div>
 
               <div className="shop-location">
-                Primary location
+                {shop.location_name ?? "Primary location"}
               </div>
             </div>
           </div>
@@ -845,8 +858,8 @@ export default async function Home() {
               <span className="negative">
                 {dispatchQueue.length > 0
                   ? formatWaitingTime(
-                      dispatchQueue[0]
-                        .waiting_since,
+                      dispatchQueue[0].waiting_since,
+                      currentTimestamp,
                     )
                   : "No wait"}
               </span>
@@ -1199,6 +1212,7 @@ export default async function Home() {
                       <td>
                         {formatWaitingTime(
                           item.waiting_since,
+                          currentTimestamp,
                         )}
                       </td>
 
