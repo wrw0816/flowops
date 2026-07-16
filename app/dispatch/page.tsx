@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import AssignmentForm from "./AssignmentForm";
+import Link from "next/link";
 type Technician = {
   id: string;
   name: string;
@@ -241,7 +242,12 @@ export default async function DispatchPage() {
             </div>
 
             <button className="secondary-button">TV Mode</button>
-            <button className="primary-button">+ Add Repair Order</button>
+            <Link
+  className="primary-button button-link"
+  href="/repair-orders/new"
+>
+  + Add Repair Order
+</Link>
           </div>
         </header>
 

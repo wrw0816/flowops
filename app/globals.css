@@ -1180,3 +1180,129 @@ tbody tr:last-child td {
 .assignment-message.error {
   color: var(--red);
 }
+.form-page-shell {
+  min-height: 100vh;
+  padding: 48px 24px;
+  background: var(--bg);
+}
+
+.form-page-card {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(18, 24, 38, 0.06);
+}
+
+.form-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-page-header h1 {
+  margin-bottom: 8px;
+}
+
+.form-page-header p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.repair-order-form {
+  padding: 30px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+}
+
+.form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.form-field > span {
+  color: #555b65;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  font: inherit;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(214, 38, 46, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.form-actions .primary-button {
+  min-width: 190px;
+}
+
+.form-message {
+  margin: 20px 0 0;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.form-message.success {
+  color: var(--green);
+  background: #e8f6ee;
+}
+
+.form-message.error {
+  color: var(--red);
+  background: #fcebed;
+}
+
+@media (max-width: 700px) {
+  .form-page-header {
+    flex-direction: column;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-field-wide {
+    grid-column: auto;
+  }
+}
