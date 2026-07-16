@@ -199,44 +199,51 @@ const atRiskCount = queue.filter((repairOrder) => {
           </div>
 
           <nav className="nav">
-            <Link className="nav-item" href="/">
-              <span>▦</span>
-              Command Center
-            </Link>
+  <Link className="nav-item" href="/">
+    <span>▦</span>
+    Command Center
+  </Link>
 
-            <Link
-              className="nav-item active"
-              href="/dispatch"
-            >
-              <span>⇄</span>
-              Dispatch Board
-            </Link>
+  <Link className="nav-item" href="/dispatch">
+    <span>⇄</span>
+    Dispatch Board
+  </Link>
 
-            <Link className="nav-item" href="/repair-orders">
-              <span>▤</span>
-              Repair Orders
-            </Link>
+  <Link className="nav-item" href="/repair-orders">
+    <span>▤</span>
+    Repair Orders
+  </Link>
 
-            <Link className="nav-item" href="/appointments">
-  <span>◷</span>
-  Appointments
-</Link>
+  <Link className="nav-item" href="/appointments">
+    <span>◷</span>
+    Appointments
+  </Link>
 
-            <a className="nav-item" href="#">
-              <span>●</span>
-              Technicians
-            </a>
+  <Link className="nav-item" href="/technicians">
+    <span>●</span>
+    Technicians
+  </Link>
 
-            <Link className="nav-item" href="/tv">
-  <span>▥</span>
-  TV Mode
-</Link>
+  <Link className="nav-item" href="/tv">
+    <span>▥</span>
+    TV Mode
+  </Link>
 
-            <a className="nav-item" href="#">
-              <span>⌁</span>
-              Analytics
-            </a>
-          </nav>
+  <Link className="nav-item" href="/activity">
+    <span>↻</span>
+    Activity
+  </Link>
+
+  <Link className="nav-item" href="/analytics">
+    <span>⌁</span>
+    Analytics
+  </Link>
+
+  <Link className="nav-item" href="/production">
+    <span>◎</span>
+    Production
+  </Link>
+</nav>
         </div>
 
         <div className="sidebar-bottom">
