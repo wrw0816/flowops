@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { assignRepairOrder } from "./actions";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type TechnicianOption = {
   id: string;
@@ -14,50 +14,80 @@ type AssignmentFormProps = {
   technicians: TechnicianOption[];
 };
 
-type ActionState = {
+type AssignmentResponse = {
   success: boolean;
   message: string;
 };
-
-const initialState: ActionState = {
-  success: false,
-  message: "",
-};
-
-async function assignmentAction(
-  _previousState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  return assignRepairOrder(formData);
-}
 
 export default function AssignmentForm({
   repairOrderId,
   technicians,
 }: AssignmentFormProps) {
-  const [state, formAction, pending] = useActionState(
-    assignmentAction,
-    initialState,
-  );
+  const router = useRouter();
+
+  const [technicianId, setTechnicianId] = useState("");
+  const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<AssignmentResponse | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!technicianId) {
+      setResult({
+        success: false,
+        message: "Select a technician before assigning the RO.",
+      });
+      return;
+    }
+
+    setPending(true);
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/dispatch/assign", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          repairOrderId,
+          technicianId,
+        }),
+      });
+
+      const data = (await response.json()) as AssignmentResponse;
+
+      setResult(data);
+
+      if (!response.ok || !data.success) {
+        return;
+      }
+
+      setTechnicianId("");
+      router.refresh();
+    } catch (error) {
+      setResult({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "The assignment request failed.",
+      });
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={formAction}>
-      <input
-        type="hidden"
-        name="repairOrderId"
-        value={repairOrderId}
-      />
-
+    <form onSubmit={handleSubmit}>
       <div className="dispatch-card-actions">
         <select
-          name="technicianId"
-          defaultValue=""
-          required
+          value={technicianId}
+          onChange={(event) => setTechnicianId(event.target.value)}
           disabled={pending}
+          aria-label="Select technician"
         >
-          <option value="" disabled>
-            Select technician
-          </option>
+          <option value="">Select technician</option>
 
           {technicians
             .filter((technician) => technician.status !== "off")
@@ -77,15 +107,15 @@ export default function AssignmentForm({
         </button>
       </div>
 
-      {state.message ? (
+      {result ? (
         <p
           className={
-            state.success
+            result.success
               ? "assignment-message success"
               : "assignment-message error"
           }
         >
-          {state.message}
+          {result.message}
         </p>
       ) : null}
     </form>
