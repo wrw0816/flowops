@@ -1306,3 +1306,127 @@ tbody tr:last-child td {
     grid-column: auto;
   }
 }
+.repair-order-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.repair-order-summary-card {
+  display: grid;
+  gap: 10px;
+  min-height: 110px;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(18, 24, 38, 0.04);
+}
+
+.repair-order-summary-card span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.repair-order-summary-card strong {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.repair-orders-panel {
+  margin-bottom: 30px;
+}
+
+.repair-order-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.repair-orders-table {
+  min-width: 1100px;
+}
+
+.repair-order-description {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ro-status {
+  display: inline-flex;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ro-status-waiting_dispatch,
+.ro-status-waiting_approval,
+.ro-status-waiting_estimate,
+.ro-status-waiting_parts {
+  color: var(--yellow);
+  background: #fff3dc;
+}
+
+.ro-status-in_progress,
+.ro-status-ready_for_technician,
+.ro-status-inspection {
+  color: var(--blue);
+  background: #eaf0ff;
+}
+
+.ro-status-ready_delivery,
+.ro-status-quality_check,
+.ro-status-approved {
+  color: var(--green);
+  background: #e8f6ee;
+}
+
+.ro-status-closed {
+  color: #686e79;
+  background: #f1f2f4;
+}
+
+.ro-status-scheduled,
+.ro-status-checked_in {
+  color: #6d4fc2;
+  background: #f0ebff;
+}
+
+.repair-order-open-link {
+  color: var(--red);
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.repair-order-open-link:hover {
+  text-decoration: underline;
+}
+
+.repair-orders-empty {
+  padding: 36px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .repair-order-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .repair-order-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 const technicians = [
   {
     name: "Kevin",
@@ -111,6 +112,7 @@ export default function Home() {
         <div>
           <div className="brand">
             <div className="brand-mark">F</div>
+
             <div>
               <div className="brand-name">FlowOps</div>
               <div className="brand-subtitle">Service Operations</div>
@@ -118,20 +120,20 @@ export default function Home() {
           </div>
 
           <nav className="nav">
-            <a className="nav-item active" href="#">
+            <Link className="nav-item active" href="/">
               <span>▦</span>
               Command Center
-            </a>
+            </Link>
 
-            <a className="nav-item" href="#">
+            <Link className="nav-item" href="/dispatch">
               <span>⇄</span>
               Dispatch Board
-            </a>
+            </Link>
 
-            <a className="nav-item" href="#">
+            <Link className="nav-item" href="/repair-orders">
               <span>▤</span>
               Repair Orders
-            </a>
+            </Link>
 
             <a className="nav-item" href="#">
               <span>◷</span>
@@ -163,6 +165,7 @@ export default function Home() {
 
           <div className="shop-card">
             <div className="shop-icon">AA</div>
+
             <div>
               <div className="shop-name">Alderman Automotive</div>
               <div className="shop-location">Primary location</div>
@@ -176,6 +179,7 @@ export default function Home() {
           <div>
             <p className="eyebrow">Thursday, July 16</p>
             <h1>Shop Command Center</h1>
+
             <p className="page-description">
               Live workload, technician flow and department pace.
             </p>
@@ -186,26 +190,34 @@ export default function Home() {
               <span className="live-dot" />
               Live
             </div>
+
             <button className="secondary-button">Open TV Mode</button>
+
             <Link
-  className="primary-button button-link"
-  href="/repair-orders/new"
->
-  + Add Repair Order
-</Link>
+              className="primary-button button-link"
+              href="/repair-orders/new"
+            >
+              + Add Repair Order
+            </Link>
           </div>
         </header>
 
         <section className="metric-grid">
           <article className="metric-card">
             <div className="metric-label">Labor Hours Closed</div>
+
             <div className="metric-row">
               <strong>14.2</strong>
               <span>of 32</span>
             </div>
+
             <div className="progress-track">
-              <div className="progress-bar progress-red" style={{ width: "44%" }} />
+              <div
+                className="progress-bar progress-red"
+                style={{ width: "44%" }}
+              />
             </div>
+
             <div className="metric-footer">
               <span>44% of goal</span>
               <span className="negative">17.8 remaining</span>
@@ -214,16 +226,19 @@ export default function Home() {
 
           <article className="metric-card">
             <div className="metric-label">Projected Finish</div>
+
             <div className="metric-row">
               <strong>28.8</strong>
               <span>hours</span>
             </div>
+
             <div className="progress-track">
               <div
                 className="progress-bar progress-yellow"
                 style={{ width: "90%" }}
               />
             </div>
+
             <div className="metric-footer">
               <span>Current pace</span>
               <span className="warning">3.2-hour gap</span>
@@ -232,10 +247,12 @@ export default function Home() {
 
           <article className="metric-card">
             <div className="metric-label">Waiting Dispatch</div>
+
             <div className="metric-row">
               <strong>4</strong>
               <span>vehicles</span>
             </div>
+
             <div className="metric-footer metric-footer-spaced">
               <span>Oldest wait</span>
               <span className="negative">22 minutes</span>
@@ -244,10 +261,12 @@ export default function Home() {
 
           <article className="metric-card">
             <div className="metric-label">Recoverable Hours</div>
+
             <div className="metric-row">
               <strong>8.6</strong>
               <span>hours</span>
             </div>
+
             <div className="metric-footer metric-footer-spaced">
               <span>Still available today</span>
               <span className="positive">$1,290</span>
@@ -262,16 +281,28 @@ export default function Home() {
                 <h2>Technician Flow</h2>
                 <p>Current and next assignments</p>
               </div>
-              <button className="text-button">Manage technicians →</button>
+
+              <button className="text-button">
+                Manage technicians →
+              </button>
             </div>
 
             <div className="technician-list">
               {technicians.map((technician) => (
-                <article className="technician-row" key={technician.name}>
+                <article
+                  className="technician-row"
+                  key={technician.name}
+                >
                   <div className="technician-identity">
-                    <div className="avatar">{technician.initials}</div>
+                    <div className="avatar">
+                      {technician.initials}
+                    </div>
+
                     <div>
-                      <div className="technician-name">{technician.name}</div>
+                      <div className="technician-name">
+                        {technician.name}
+                      </div>
+
                       <div className={statusClass(technician.status)}>
                         <span />
                         {technician.status}
@@ -288,7 +319,9 @@ export default function Home() {
 
                   <div className="time-block">
                     <div className="assignment-label">Sold</div>
-                    <strong>{technician.soldHours.toFixed(1)} hrs</strong>
+                    <strong>
+                      {technician.soldHours.toFixed(1)} hrs
+                    </strong>
                     <span>{technician.elapsed}</span>
                   </div>
 
@@ -311,31 +344,52 @@ export default function Home() {
                   <h2>Action Required</h2>
                   <p>Highest-impact issues right now</p>
                 </div>
+
                 <span className="alert-count">3</span>
               </div>
 
               <div className="alert-list">
                 <div className="alert-item alert-danger">
                   <div className="alert-icon">!</div>
+
                   <div>
-                    <strong>Mitch has been idle for 11 minutes</strong>
-                    <p>RO 56328 is ready and recommended for dispatch.</p>
+                    <strong>
+                      Mitch has been idle for 11 minutes
+                    </strong>
+
+                    <p>
+                      RO 56328 is ready and recommended for dispatch.
+                    </p>
                   </div>
                 </div>
 
                 <div className="alert-item alert-warning">
                   <div className="alert-icon">◷</div>
+
                   <div>
-                    <strong>RO 56304 is waiting for approval</strong>
-                    <p>3.2 labor hours have been pending for 38 minutes.</p>
+                    <strong>
+                      RO 56304 is waiting for approval
+                    </strong>
+
+                    <p>
+                      3.2 labor hours have been pending for 38
+                      minutes.
+                    </p>
                   </div>
                 </div>
 
                 <div className="alert-item alert-info">
                   <div className="alert-icon">↗</div>
+
                   <div>
-                    <strong>Two appointments arrive within 30 minutes</strong>
-                    <p>No technician has been reserved for one appointment.</p>
+                    <strong>
+                      Two appointments arrive within 30 minutes
+                    </strong>
+
+                    <p>
+                      No technician has been reserved for one
+                      appointment.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -347,6 +401,7 @@ export default function Home() {
                   <h2>Upcoming</h2>
                   <p>Next scheduled arrivals</p>
                 </div>
+
                 <button className="text-button">View all →</button>
               </div>
 
@@ -356,11 +411,15 @@ export default function Home() {
                     className="appointment-row"
                     key={`${appointment.time}-${appointment.vehicle}`}
                   >
-                    <div className="appointment-time">{appointment.time}</div>
+                    <div className="appointment-time">
+                      {appointment.time}
+                    </div>
+
                     <div className="appointment-details">
                       <strong>{appointment.vehicle}</strong>
                       <span>{appointment.service}</span>
                     </div>
+
                     <span
                       className={
                         appointment.status === "Arrived"
@@ -381,9 +440,17 @@ export default function Home() {
           <div className="panel-heading">
             <div>
               <h2>Dispatch Queue</h2>
-              <p>Vehicles ready or waiting for technician assignment</p>
+              <p>
+                Vehicles ready or waiting for technician assignment
+              </p>
             </div>
-            <button className="secondary-button">Open Dispatch Board</button>
+
+            <Link
+              className="secondary-button button-link"
+              href="/dispatch"
+            >
+              Open Dispatch Board
+            </Link>
           </div>
 
           <div className="table-wrapper">
@@ -410,15 +477,23 @@ export default function Home() {
                         {item.priority}
                       </span>
                     </td>
+
                     <td>
                       <strong>RO {item.ro}</strong>
                     </td>
+
                     <td>{item.vehicle}</td>
                     <td>{item.work}</td>
                     <td>{item.waiting}</td>
                     <td>{item.recommended}</td>
+
                     <td>
-                      <button className="assign-button">Assign</button>
+                      <Link
+                        className="assign-button button-link"
+                        href="/dispatch"
+                      >
+                        Assign
+                      </Link>
                     </td>
                   </tr>
                 ))}

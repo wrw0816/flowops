@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AssignmentForm from "./AssignmentForm";
-import Link from "next/link";
+
 type Technician = {
   id: string;
   name: string;
@@ -29,9 +30,18 @@ type RepairOrder = {
 };
 
 function technicianStatusClass(status: Technician["status"]) {
-  if (status === "working") return "dispatch-tech-status working";
-  if (status === "waiting") return "dispatch-tech-status waiting";
-  if (status === "available") return "dispatch-tech-status available";
+  if (status === "working") {
+    return "dispatch-tech-status working";
+  }
+
+  if (status === "waiting") {
+    return "dispatch-tech-status waiting";
+  }
+
+  if (status === "available") {
+    return "dispatch-tech-status available";
+  }
+
   return "dispatch-tech-status off";
 }
 
@@ -55,7 +65,10 @@ function formatElapsed(minutes: number) {
 function formatWaitingTime(waitingSince: string) {
   const start = new Date(waitingSince).getTime();
   const now = Date.now();
-  const minutes = Math.max(0, Math.floor((now - start) / 60000));
+  const minutes = Math.max(
+    0,
+    Math.floor((now - start) / 60000),
+  );
 
   return formatElapsed(minutes);
 }
@@ -150,10 +163,15 @@ export default async function DispatchPage() {
 
   const atRiskCount = queue.filter((repairOrder) => {
     const waitingMinutes = Math.floor(
-      (Date.now() - new Date(repairOrder.waiting_since).getTime()) / 60000,
+      (Date.now() -
+        new Date(repairOrder.waiting_since).getTime()) /
+        60000,
     );
 
-    return waitingMinutes >= 15 || repairOrder.priority === "urgent";
+    return (
+      waitingMinutes >= 15 ||
+      repairOrder.priority === "urgent"
+    );
   }).length;
 
   return (
@@ -165,25 +183,30 @@ export default async function DispatchPage() {
 
             <div>
               <div className="brand-name">FlowOps</div>
-              <div className="brand-subtitle">Service Operations</div>
+              <div className="brand-subtitle">
+                Service Operations
+              </div>
             </div>
           </div>
 
           <nav className="nav">
-            <a className="nav-item" href="/">
+            <Link className="nav-item" href="/">
               <span>▦</span>
               Command Center
-            </a>
+            </Link>
 
-            <a className="nav-item active" href="/dispatch">
+            <Link
+              className="nav-item active"
+              href="/dispatch"
+            >
               <span>⇄</span>
               Dispatch Board
-            </a>
+            </Link>
 
-            <a className="nav-item" href="#">
+            <Link className="nav-item" href="/repair-orders">
               <span>▤</span>
               Repair Orders
-            </a>
+            </Link>
 
             <a className="nav-item" href="#">
               <span>◷</span>
@@ -217,8 +240,13 @@ export default async function DispatchPage() {
             <div className="shop-icon">AA</div>
 
             <div>
-              <div className="shop-name">Alderman Automotive</div>
-              <div className="shop-location">Primary location</div>
+              <div className="shop-name">
+                Alderman Automotive
+              </div>
+
+              <div className="shop-location">
+                Primary location
+              </div>
             </div>
           </div>
         </div>
@@ -231,7 +259,8 @@ export default async function DispatchPage() {
             <h1>Dispatch Board</h1>
 
             <p className="page-description">
-              Assign work, monitor technician flow and eliminate idle time.
+              Assign work, monitor technician flow and eliminate
+              idle time.
             </p>
           </div>
 
@@ -241,13 +270,16 @@ export default async function DispatchPage() {
               Live
             </div>
 
-            <button className="secondary-button">TV Mode</button>
+            <button className="secondary-button">
+              TV Mode
+            </button>
+
             <Link
-  className="primary-button button-link"
-  href="/repair-orders/new"
->
-  + Add Repair Order
-</Link>
+              className="primary-button button-link"
+              href="/repair-orders/new"
+            >
+              + Add Repair Order
+            </Link>
           </div>
         </header>
 
@@ -255,7 +287,9 @@ export default async function DispatchPage() {
           <article className="dispatch-summary-card">
             <span>Waiting Dispatch</span>
             <strong>{queue.length}</strong>
-            <small>{totalWaitingHours.toFixed(1)} labor hours</small>
+            <small>
+              {totalWaitingHours.toFixed(1)} labor hours
+            </small>
           </article>
 
           <article className="dispatch-summary-card">
@@ -287,8 +321,14 @@ export default async function DispatchPage() {
 
           <article className="dispatch-summary-card">
             <span>At Risk</span>
-            <strong className="dispatch-yellow">{atRiskCount}</strong>
-            <small>Urgent or waiting more than 15 minutes</small>
+
+            <strong className="dispatch-yellow">
+              {atRiskCount}
+            </strong>
+
+            <small>
+              Urgent or waiting more than 15 minutes
+            </small>
           </article>
         </section>
 
@@ -297,14 +337,27 @@ export default async function DispatchPage() {
             <div className="dispatch-section-header">
               <div>
                 <h2>Ready for Dispatch</h2>
-                <p>Prioritized repair orders waiting for assignment</p>
+                <p>
+                  Prioritized repair orders waiting for assignment
+                </p>
               </div>
 
               <div className="dispatch-filter-row">
-                <button className="dispatch-filter active">All</button>
-                <button className="dispatch-filter">Waiting</button>
-                <button className="dispatch-filter">Customer Waiter</button>
-                <button className="dispatch-filter">Parts Ready</button>
+                <button className="dispatch-filter active">
+                  All
+                </button>
+
+                <button className="dispatch-filter">
+                  Waiting
+                </button>
+
+                <button className="dispatch-filter">
+                  Customer Waiter
+                </button>
+
+                <button className="dispatch-filter">
+                  Parts Ready
+                </button>
               </div>
             </div>
 
@@ -320,11 +373,15 @@ export default async function DispatchPage() {
                     borderRadius: "10px",
                   }}
                 >
-                  No repair orders are currently waiting for dispatch.
+                  No repair orders are currently waiting for
+                  dispatch.
                 </div>
               ) : (
                 queue.map((item) => (
-                  <article className="dispatch-ro-card" key={item.id}>
+                  <article
+                    className="dispatch-ro-card"
+                    key={item.id}
+                  >
                     <div className="dispatch-card-top">
                       <div className="dispatch-card-heading">
                         <span
@@ -334,13 +391,19 @@ export default async function DispatchPage() {
                         </span>
 
                         <div>
-                          <strong>RO {item.ro_number}</strong>
+                          <strong>
+                            RO {item.ro_number}
+                          </strong>
+
                           <span>{item.vehicle}</span>
                         </div>
                       </div>
 
                       <span className="dispatch-wait-time">
-                        Waiting {formatWaitingTime(item.waiting_since)}
+                        Waiting{" "}
+                        {formatWaitingTime(
+                          item.waiting_since,
+                        )}
                       </span>
                     </div>
 
@@ -351,32 +414,44 @@ export default async function DispatchPage() {
                     <div className="dispatch-card-details">
                       <div>
                         <span>Advisor</span>
-                        <strong>{item.advisor_name ?? "Unassigned"}</strong>
+
+                        <strong>
+                          {item.advisor_name ?? "Unassigned"}
+                        </strong>
                       </div>
 
                       <div>
                         <span>Promised</span>
+
                         <strong>
-                          {formatPromisedTime(item.promised_at)}
+                          {formatPromisedTime(
+                            item.promised_at,
+                          )}
                         </strong>
                       </div>
 
                       <div>
                         <span>Labor</span>
+
                         <strong>
-                          {Number(item.estimated_hours).toFixed(1)} hrs
+                          {Number(
+                            item.estimated_hours,
+                          ).toFixed(1)}{" "}
+                          hrs
                         </strong>
                       </div>
                     </div>
 
                     <AssignmentForm
-  repairOrderId={item.id}
-  technicians={technicians.map((technician) => ({
-    id: technician.id,
-    name: technician.name,
-    status: technician.status,
-  }))}
-/>
+                      repairOrderId={item.id}
+                      technicians={technicians.map(
+                        (technician) => ({
+                          id: technician.id,
+                          name: technician.name,
+                          status: technician.status,
+                        }),
+                      )}
+                    />
                   </article>
                 ))
               )}
@@ -415,11 +490,15 @@ export default async function DispatchPage() {
                       <div className="dispatch-tech-identity">
                         <div className="avatar">
                           {technician.initials ??
-                            technician.name.slice(0, 2).toUpperCase()}
+                            technician.name
+                              .slice(0, 2)
+                              .toUpperCase()}
                         </div>
 
                         <div>
-                          <strong>{technician.name}</strong>
+                          <strong>
+                            {technician.name}
+                          </strong>
 
                           <div
                             className={technicianStatusClass(
@@ -427,12 +506,16 @@ export default async function DispatchPage() {
                             )}
                           >
                             <span />
-                            {formatStatus(technician.status)}
+                            {formatStatus(
+                              technician.status,
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      <button className="row-action">•••</button>
+                      <button className="row-action">
+                        •••
+                      </button>
                     </div>
 
                     <div className="dispatch-current-job">
@@ -441,7 +524,8 @@ export default async function DispatchPage() {
                       </span>
 
                       <strong>
-                        {technician.current_ro ?? "No active RO"}
+                        {technician.current_ro ??
+                          "No active RO"}
                       </strong>
 
                       <span>
@@ -458,7 +542,9 @@ export default async function DispatchPage() {
                         <span>Time in status</span>
 
                         <strong>
-                          {formatElapsed(technician.elapsed_minutes)}
+                          {formatElapsed(
+                            technician.elapsed_minutes,
+                          )}
                         </strong>
                       </div>
                     </div>
@@ -469,7 +555,8 @@ export default async function DispatchPage() {
                       </span>
 
                       <strong>
-                        {technician.next_ro ?? "Unassigned"}
+                        {technician.next_ro ??
+                          "Unassigned"}
                       </strong>
 
                       <span>
