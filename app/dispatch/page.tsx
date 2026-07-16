@@ -208,10 +208,10 @@ export default async function DispatchPage() {
               Repair Orders
             </Link>
 
-            <a className="nav-item" href="#">
-              <span>◷</span>
-              Appointments
-            </a>
+            <Link className="nav-item" href="/appointments">
+  <span>◷</span>
+  Appointments
+</Link>
 
             <a className="nav-item" href="#">
               <span>●</span>

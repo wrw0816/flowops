@@ -134,10 +134,10 @@ export default async function TechniciansPage() {
               Repair Orders
             </Link>
 
-            <a className="nav-item" href="#">
-              <span>◷</span>
-              Appointments
-            </a>
+            <Link className="nav-item" href="/appointments">
+  <span>◷</span>
+  Appointments
+</Link>
 
             <Link
               className="nav-item active"
