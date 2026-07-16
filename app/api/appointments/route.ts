@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getActiveShopId } from "@/lib/shop-context";
 
 type AppointmentStatus =
   | "scheduled"
@@ -7,7 +8,10 @@ type AppointmentStatus =
   | "arrived"
   | "late";
 
-type AppointmentPriority = "urgent" | "high" | "normal";
+type AppointmentPriority =
+  | "urgent"
+  | "high"
+  | "normal";
 
 type CreateAppointmentRequest = {
   customerName?: string;
@@ -42,6 +46,7 @@ function optionalText(value: unknown) {
   }
 
   const trimmed = value.trim();
+
   return trimmed.length > 0 ? trimmed : null;
 }
 
@@ -65,27 +70,39 @@ export async function POST(request: Request) {
       (await request.json()) as CreateAppointmentRequest;
 
     const vehicle = body.vehicle?.trim();
+
     const serviceDescription =
       body.serviceDescription?.trim();
 
-    const appointmentAt = parseDateTime(body.appointmentAt);
-    const promisedAt = parseDateTime(body.promisedAt);
+    const appointmentAt = parseDateTime(
+      body.appointmentAt,
+    );
+
+    const promisedAt = parseDateTime(
+      body.promisedAt,
+    );
 
     const estimatedHours = Number(
       body.estimatedHours ?? 0,
     );
 
     const status =
-      body.status && allowedStatuses.includes(body.status)
+      body.status &&
+      allowedStatuses.includes(body.status)
         ? body.status
         : "scheduled";
 
     const priority =
-      body.priority && allowedPriorities.includes(body.priority)
+      body.priority &&
+      allowedPriorities.includes(body.priority)
         ? body.priority
         : "normal";
 
-    if (!vehicle || !serviceDescription || !appointmentAt) {
+    if (
+      !vehicle ||
+      !serviceDescription ||
+      !appointmentAt
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -111,37 +128,23 @@ export async function POST(request: Request) {
     }
 
     const supabase = createAdminClient();
+    const shopId = getActiveShopId();
 
-    const { data: shop, error: shopError } = await supabase
-      .from("shops")
-      .select("id")
-      .eq("name", "Alderman Automotive")
-      .limit(1)
-      .single();
-
-    if (shopError || !shop) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            shopError?.message ??
-            "The FlowOps shop could not be found.",
-        },
-        { status: 404 },
-      );
-    }
-
-    const technicianId =
-      optionalText(body.technicianId);
+    const technicianId = optionalText(
+      body.technicianId,
+    );
 
     if (technicianId) {
-      const { data: technician, error: technicianError } =
-        await supabase
-          .from("technicians")
-          .select("id")
-          .eq("id", technicianId)
-          .eq("active", true)
-          .single();
+      const {
+        data: technician,
+        error: technicianError,
+      } = await supabase
+        .from("technicians")
+        .select("id, shop_id, active")
+        .eq("id", technicianId)
+        .eq("shop_id", shopId)
+        .eq("active", true)
+        .single();
 
       if (technicianError || !technician) {
         return NextResponse.json(
@@ -159,11 +162,15 @@ export async function POST(request: Request) {
     const { error: insertError } = await supabase
       .from("appointments")
       .insert({
-        shop_id: shop.id,
-        customer_name: optionalText(body.customerName),
+        shop_id: shopId,
+        customer_name: optionalText(
+          body.customerName,
+        ),
         vehicle,
         service_description: serviceDescription,
-        advisor_name: optionalText(body.advisorName),
+        advisor_name: optionalText(
+          body.advisorName,
+        ),
         appointment_at: appointmentAt,
         promised_at: promisedAt,
         estimated_hours: estimatedHours,
@@ -175,7 +182,8 @@ export async function POST(request: Request) {
       });
 
     if (insertError) {
-      const duplicate = insertError.code === "23505";
+      const duplicate =
+        insertError.code === "23505";
 
       return NextResponse.json(
         {
@@ -184,13 +192,16 @@ export async function POST(request: Request) {
             ? "An appointment already exists for that vehicle at that time."
             : insertError.message,
         },
-        { status: duplicate ? 409 : 500 },
+        {
+          status: duplicate ? 409 : 500,
+        },
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "The appointment was created successfully.",
+      message:
+        "The appointment was created successfully.",
     });
   } catch (error) {
     const message =

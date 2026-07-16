@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AssignmentForm from "./AssignmentForm";
+import { getServerTimestamp } from "@/lib/server-time";
 
 type Technician = {
   id: string;
@@ -156,24 +157,32 @@ export default async function DispatchPage() {
   );
 
   const totalWaitingHours = queue.reduce(
-    (total, repairOrder) =>
-      total + Number(repairOrder.estimated_hours ?? 0),
-    0,
+  (total, repairOrder) =>
+    total + Number(repairOrder.estimated_hours ?? 0),
+  0,
+);
+
+const currentTimestamp = getServerTimestamp();
+
+const atRiskCount = queue.filter((repairOrder) => {
+  const waitingSinceTimestamp = new Date(
+    repairOrder.waiting_since,
+  ).getTime();
+
+  const waitingMinutes = Number.isNaN(
+    waitingSinceTimestamp,
+  )
+    ? 0
+    : Math.floor(
+        (currentTimestamp - waitingSinceTimestamp) /
+          60000,
+      );
+
+  return (
+    waitingMinutes >= 15 ||
+    repairOrder.priority === "urgent"
   );
-
-  const atRiskCount = queue.filter((repairOrder) => {
-    const waitingMinutes = Math.floor(
-      (Date.now() -
-        new Date(repairOrder.waiting_since).getTime()) /
-        60000,
-    );
-
-    return (
-      waitingMinutes >= 15 ||
-      repairOrder.priority === "urgent"
-    );
-  }).length;
-
+}).length;
   return (
     <main className="app-shell">
       <aside className="sidebar">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getActiveShopId } from "@/lib/shop-context";
 
 type TechnicianStatus =
   | "working"
@@ -28,22 +29,31 @@ export async function POST(request: Request) {
       (await request.json()) as CreateTechnicianRequest;
 
     const name = body.name?.trim();
+
     const initials =
-      body.initials?.trim().toUpperCase().slice(0, 3) || null;
+      body.initials
+        ?.trim()
+        .toUpperCase()
+        .slice(0, 3) || null;
 
     const status =
-      body.status && allowedStatuses.includes(body.status)
+      body.status &&
+      allowedStatuses.includes(body.status)
         ? body.status
         : "available";
 
-    const displayOrder = Number(body.displayOrder ?? 0);
+    const displayOrder = Number(
+      body.displayOrder ?? 0,
+    );
+
     const active = body.active !== false;
 
     if (!name) {
       return NextResponse.json(
         {
           success: false,
-          message: "Technician name is required.",
+          message:
+            "Technician name is required.",
         },
         { status: 400 },
       );
@@ -65,50 +75,43 @@ export async function POST(request: Request) {
     }
 
     const supabase = createAdminClient();
+    const shopId = getActiveShopId();
+    const now = new Date().toISOString();
 
-    const { data: shop, error: shopError } = await supabase
-      .from("shops")
-      .select("id")
-      .eq("name", "Alderman Automotive")
-      .limit(1)
-      .single();
+    const finalStatus = active
+      ? status
+      : "off";
 
-    if (shopError || !shop) {
+    const { data: technician, error: insertError } =
+      await supabase
+        .from("technicians")
+        .insert({
+          shop_id: shopId,
+          name,
+          initials,
+          status: finalStatus,
+          active,
+          display_order: displayOrder,
+          current_ro: null,
+          current_vehicle: null,
+          current_operation: null,
+          sold_hours: 0,
+          elapsed_minutes: 0,
+          next_ro: null,
+          next_vehicle: null,
+          status_changed_at: now,
+          updated_at: now,
+        })
+        .select("id, name")
+        .single();
+
+    if (insertError || !technician) {
       return NextResponse.json(
         {
           success: false,
           message:
-            shopError?.message ??
-            "The FlowOps shop could not be found.",
-        },
-        { status: 404 },
-      );
-    }
-
-    const { error: insertError } = await supabase
-      .from("technicians")
-      .insert({
-        shop_id: shop.id,
-        name,
-        initials,
-        status,
-        active,
-        display_order: displayOrder,
-        current_ro: null,
-        current_vehicle: null,
-        current_operation: null,
-        sold_hours: 0,
-        elapsed_minutes: 0,
-        next_ro: null,
-        next_vehicle: null,
-        updated_at: new Date().toISOString(),
-      });
-
-    if (insertError) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: insertError.message,
+            insertError?.message ??
+            "The technician could not be created.",
         },
         { status: 500 },
       );
@@ -116,7 +119,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `${name} was added to the technician roster.`,
+      message: `${technician.name} was added to the technician roster.`,
     });
   } catch (error) {
     const message =
@@ -124,7 +127,10 @@ export async function POST(request: Request) {
         ? error.message
         : "Unexpected technician creation error.";
 
-    console.error("FlowOps technician creation error:", error);
+    console.error(
+      "FlowOps technician creation error:",
+      error,
+    );
 
     return NextResponse.json(
       {

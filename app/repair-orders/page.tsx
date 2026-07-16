@@ -45,10 +45,6 @@ function formatStatus(status: RepairOrder["status"]) {
     .join(" ");
 }
 
-function formatPriority(priority: RepairOrder["priority"]) {
-  return priority.charAt(0).toUpperCase() + priority.slice(1);
-}
-
 function formatDateTime(value: string | null) {
   if (!value) return "Not set";
 
