@@ -1161,3 +1161,22 @@ tbody tr:last-child td {
   justify-content: center;
   text-decoration: none;
 }
+.dispatch-assign-button:disabled,
+.dispatch-card-actions select:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.assignment-message {
+  margin: 8px 0 0;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.assignment-message.success {
+  color: var(--green);
+}
+
+.assignment-message.error {
+  color: var(--red);
+}

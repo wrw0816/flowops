@@ -1,106 +1,167 @@
-const technicians = [
-  {
-    name: "Kevin",
-    initials: "KW",
-    status: "Working",
-    currentRo: "RO 56321",
-    vehicle: "2021 Ford F-150",
-    operation: "Front brakes",
-    elapsed: "1h 12m",
-    nextRo: "RO 56346",
-    nextVehicle: "2020 Honda Accord",
-  },
-  {
-    name: "Cesar",
-    initials: "CR",
-    status: "Working",
-    currentRo: "RO 56318",
-    vehicle: "2019 Chevrolet Tahoe",
-    operation: "Cooling system diagnosis",
-    elapsed: "46m",
-    nextRo: "RO 56339",
-    nextVehicle: "2022 Toyota Camry",
-  },
-  {
-    name: "Michael",
-    initials: "MS",
-    status: "Waiting",
-    currentRo: "RO 56304",
-    vehicle: "2018 Jeep Grand Cherokee",
-    operation: "Waiting for approval",
-    elapsed: "38m",
-    nextRo: "Unassigned",
-    nextVehicle: "Needs next assignment",
-  },
-  {
-    name: "Mitch",
-    initials: "MB",
-    status: "Available",
-    currentRo: "No active RO",
-    vehicle: "Ready for dispatch",
-    operation: "Available now",
-    elapsed: "11m idle",
-    nextRo: "RO 56328",
-    nextVehicle: "2020 Ford Explorer",
-  },
-];
+import { createClient } from "@/lib/supabase/server";
+import AssignmentForm from "./AssignmentForm";
+type Technician = {
+  id: string;
+  name: string;
+  initials: string | null;
+  status: "working" | "waiting" | "available" | "off";
+  current_ro: string | null;
+  current_vehicle: string | null;
+  current_operation: string | null;
+  sold_hours: number | string;
+  elapsed_minutes: number;
+  next_ro: string | null;
+  next_vehicle: string | null;
+  display_order: number;
+};
 
-const queue = [
-  {
-    priority: "Urgent",
-    ro: "56328",
-    vehicle: "2020 Ford Explorer",
-    service: "No-start diagnostic",
-    advisor: "Logan",
-    promised: "11:30 AM",
-    waiting: "22 min",
-    hours: "1.5",
-  },
-  {
-    priority: "High",
-    ro: "56331",
-    vehicle: "2021 Honda Accord",
-    service: "MPI and oil change",
-    advisor: "Tristan",
-    promised: "12:00 PM",
-    waiting: "14 min",
-    hours: "1.0",
-  },
-  {
-    priority: "High",
-    ro: "56340",
-    vehicle: "2019 Chevrolet Tahoe",
-    service: "Front brake replacement",
-    advisor: "Logan",
-    promised: "2:00 PM",
-    waiting: "8 min",
-    hours: "2.5",
-  },
-  {
-    priority: "Normal",
-    ro: "56344",
-    vehicle: "2022 Toyota Camry",
-    service: "Check-engine-light diagnosis",
-    advisor: "Tristan",
-    promised: "3:30 PM",
-    waiting: "5 min",
-    hours: "1.0",
-  },
-];
+type RepairOrder = {
+  id: string;
+  ro_number: string;
+  vehicle: string;
+  service_description: string;
+  advisor_name: string | null;
+  priority: "urgent" | "high" | "normal";
+  promised_at: string | null;
+  estimated_hours: number | string;
+  waiting_since: string;
+};
 
-function technicianStatusClass(status: string) {
-  if (status === "Working") return "dispatch-tech-status working";
-  if (status === "Waiting") return "dispatch-tech-status waiting";
-  return "dispatch-tech-status available";
+function technicianStatusClass(status: Technician["status"]) {
+  if (status === "working") return "dispatch-tech-status working";
+  if (status === "waiting") return "dispatch-tech-status waiting";
+  if (status === "available") return "dispatch-tech-status available";
+  return "dispatch-tech-status off";
 }
 
-export default function DispatchPage() {
+function formatStatus(status: Technician["status"]) {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function formatElapsed(minutes: number) {
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  return remainingMinutes > 0
+    ? `${hours}h ${remainingMinutes}m`
+    : `${hours}h`;
+}
+
+function formatWaitingTime(waitingSince: string) {
+  const start = new Date(waitingSince).getTime();
+  const now = Date.now();
+  const minutes = Math.max(0, Math.floor((now - start) / 60000));
+
+  return formatElapsed(minutes);
+}
+
+function formatPromisedTime(promisedAt: string | null) {
+  if (!promisedAt) {
+    return "Not set";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Indiana/Indianapolis",
+  }).format(new Date(promisedAt));
+}
+
+function priorityLabel(priority: RepairOrder["priority"]) {
+  return priority.charAt(0).toUpperCase() + priority.slice(1);
+}
+
+export default async function DispatchPage() {
+  const supabase = await createClient();
+
+  const [
+    { data: technicianData, error: technicianError },
+    { data: repairOrderData, error: repairOrderError },
+  ] = await Promise.all([
+    supabase
+      .from("technicians")
+      .select(`
+        id,
+        name,
+        initials,
+        status,
+        current_ro,
+        current_vehicle,
+        current_operation,
+        sold_hours,
+        elapsed_minutes,
+        next_ro,
+        next_vehicle,
+        display_order
+      `)
+      .eq("active", true)
+      .order("display_order", { ascending: true }),
+
+    supabase
+      .from("repair_orders")
+      .select(`
+        id,
+        ro_number,
+        vehicle,
+        service_description,
+        advisor_name,
+        priority,
+        promised_at,
+        estimated_hours,
+        waiting_since
+      `)
+      .eq("status", "waiting_dispatch")
+      .order("waiting_since", { ascending: true }),
+  ]);
+
+  if (technicianError) {
+    throw new Error(
+      `Unable to load technicians: ${technicianError.message}`,
+    );
+  }
+
+  if (repairOrderError) {
+    throw new Error(
+      `Unable to load repair orders: ${repairOrderError.message}`,
+    );
+  }
+
+  const technicians = (technicianData ?? []) as Technician[];
+  const queue = (repairOrderData ?? []) as RepairOrder[];
+
+  const workingCount = technicians.filter(
+    (technician) => technician.status === "working",
+  ).length;
+
+  const availableTechnicians = technicians.filter(
+    (technician) => technician.status === "available",
+  );
+
+  const totalWaitingHours = queue.reduce(
+    (total, repairOrder) =>
+      total + Number(repairOrder.estimated_hours ?? 0),
+    0,
+  );
+
+  const atRiskCount = queue.filter((repairOrder) => {
+    const waitingMinutes = Math.floor(
+      (Date.now() - new Date(repairOrder.waiting_since).getTime()) / 60000,
+    );
+
+    return waitingMinutes >= 15 || repairOrder.priority === "urgent";
+  }).length;
+
   return (
     <main className="app-shell">
       <aside className="sidebar">
         <div>
           <div className="brand">
             <div className="brand-mark">F</div>
+
             <div>
               <div className="brand-name">FlowOps</div>
               <div className="brand-subtitle">Service Operations</div>
@@ -113,10 +174,10 @@ export default function DispatchPage() {
               Command Center
             </a>
 
-            <a className="nav-item" href="/dispatch">
-  <span>⇄</span>
-  Dispatch Board
-</a>
+            <a className="nav-item active" href="/dispatch">
+              <span>⇄</span>
+              Dispatch Board
+            </a>
 
             <a className="nav-item" href="#">
               <span>▤</span>
@@ -153,6 +214,7 @@ export default function DispatchPage() {
 
           <div className="shop-card">
             <div className="shop-icon">AA</div>
+
             <div>
               <div className="shop-name">Alderman Automotive</div>
               <div className="shop-location">Primary location</div>
@@ -166,6 +228,7 @@ export default function DispatchPage() {
           <div>
             <p className="eyebrow">Live Shop Flow</p>
             <h1>Dispatch Board</h1>
+
             <p className="page-description">
               Assign work, monitor technician flow and eliminate idle time.
             </p>
@@ -185,26 +248,41 @@ export default function DispatchPage() {
         <section className="dispatch-summary">
           <article className="dispatch-summary-card">
             <span>Waiting Dispatch</span>
-            <strong>4</strong>
-            <small>8.0 labor hours</small>
+            <strong>{queue.length}</strong>
+            <small>{totalWaitingHours.toFixed(1)} labor hours</small>
           </article>
 
           <article className="dispatch-summary-card">
             <span>Technicians Working</span>
-            <strong>2</strong>
-            <small>50% active utilization</small>
+            <strong>{workingCount}</strong>
+
+            <small>
+              {technicians.length > 0
+                ? `${Math.round(
+                    (workingCount / technicians.length) * 100,
+                  )}% active utilization`
+                : "No technicians configured"}
+            </small>
           </article>
 
           <article className="dispatch-summary-card">
             <span>Available Now</span>
-            <strong className="dispatch-red">1</strong>
-            <small>Mitch idle for 11 minutes</small>
+
+            <strong className="dispatch-red">
+              {availableTechnicians.length}
+            </strong>
+
+            <small>
+              {availableTechnicians.length > 0
+                ? `${availableTechnicians[0].name} available now`
+                : "No technicians currently available"}
+            </small>
           </article>
 
           <article className="dispatch-summary-card">
             <span>At Risk</span>
-            <strong className="dispatch-yellow">2</strong>
-            <small>Approval or promised-time risk</small>
+            <strong className="dispatch-yellow">{atRiskCount}</strong>
+            <small>Urgent or waiting more than 15 minutes</small>
           </article>
         </section>
 
@@ -225,65 +303,77 @@ export default function DispatchPage() {
             </div>
 
             <div className="dispatch-card-list">
-              {queue.map((item) => (
-                <article className="dispatch-ro-card" key={item.ro}>
-                  <div className="dispatch-card-top">
-                    <div className="dispatch-card-heading">
-                      <span
-                        className={`priority priority-${item.priority.toLowerCase()}`}
-                      >
-                        {item.priority}
+              {queue.length === 0 ? (
+                <div
+                  style={{
+                    padding: "32px",
+                    textAlign: "center",
+                    color: "#737985",
+                    background: "#ffffff",
+                    border: "1px solid #e4e6ea",
+                    borderRadius: "10px",
+                  }}
+                >
+                  No repair orders are currently waiting for dispatch.
+                </div>
+              ) : (
+                queue.map((item) => (
+                  <article className="dispatch-ro-card" key={item.id}>
+                    <div className="dispatch-card-top">
+                      <div className="dispatch-card-heading">
+                        <span
+                          className={`priority priority-${item.priority}`}
+                        >
+                          {priorityLabel(item.priority)}
+                        </span>
+
+                        <div>
+                          <strong>RO {item.ro_number}</strong>
+                          <span>{item.vehicle}</span>
+                        </div>
+                      </div>
+
+                      <span className="dispatch-wait-time">
+                        Waiting {formatWaitingTime(item.waiting_since)}
                       </span>
+                    </div>
+
+                    <div className="dispatch-service-name">
+                      {item.service_description}
+                    </div>
+
+                    <div className="dispatch-card-details">
+                      <div>
+                        <span>Advisor</span>
+                        <strong>{item.advisor_name ?? "Unassigned"}</strong>
+                      </div>
 
                       <div>
-                        <strong>RO {item.ro}</strong>
-                        <span>{item.vehicle}</span>
+                        <span>Promised</span>
+                        <strong>
+                          {formatPromisedTime(item.promised_at)}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Labor</span>
+                        <strong>
+                          {Number(item.estimated_hours).toFixed(1)} hrs
+                        </strong>
                       </div>
                     </div>
 
-                    <span className="dispatch-wait-time">
-                      Waiting {item.waiting}
-                    </span>
-                  </div>
-
-                  <div className="dispatch-service-name">
-                    {item.service}
-                  </div>
-
-                  <div className="dispatch-card-details">
-                    <div>
-                      <span>Advisor</span>
-                      <strong>{item.advisor}</strong>
-                    </div>
-
-                    <div>
-                      <span>Promised</span>
-                      <strong>{item.promised}</strong>
-                    </div>
-
-                    <div>
-                      <span>Labor</span>
-                      <strong>{item.hours} hrs</strong>
-                    </div>
-                  </div>
-
-                  <div className="dispatch-card-actions">
-                    <select defaultValue="">
-                      <option value="" disabled>
-                        Select technician
-                      </option>
-                      <option>Kevin</option>
-                      <option>Cesar</option>
-                      <option>Michael</option>
-                      <option>Mitch</option>
-                    </select>
-
-                    <button className="dispatch-assign-button">
-                      Assign RO
-                    </button>
-                  </div>
-                </article>
-              ))}
+                    <AssignmentForm
+  repairOrderId={item.id}
+  technicians={technicians.map((technician) => ({
+    id: technician.id,
+    name: technician.name,
+    status: technician.status,
+  }))}
+/>
+                  </article>
+                ))
+              )}
             </div>
           </div>
 
@@ -296,60 +386,98 @@ export default function DispatchPage() {
             </div>
 
             <div className="dispatch-technician-list">
-              {technicians.map((technician) => (
-                <article
-                  className="dispatch-technician-card"
-                  key={technician.name}
+              {technicians.length === 0 ? (
+                <div
+                  style={{
+                    padding: "32px",
+                    textAlign: "center",
+                    color: "#737985",
+                    background: "#ffffff",
+                    border: "1px solid #e4e6ea",
+                    borderRadius: "10px",
+                  }}
                 >
-                  <div className="dispatch-tech-header">
-                    <div className="dispatch-tech-identity">
-                      <div className="avatar">{technician.initials}</div>
-
-                      <div>
-                        <strong>{technician.name}</strong>
-                        <div
-                          className={technicianStatusClass(
-                            technician.status,
-                          )}
-                        >
-                          <span />
-                          {technician.status}
+                  No technicians have been configured.
+                </div>
+              ) : (
+                technicians.map((technician) => (
+                  <article
+                    className="dispatch-technician-card"
+                    key={technician.id}
+                  >
+                    <div className="dispatch-tech-header">
+                      <div className="dispatch-tech-identity">
+                        <div className="avatar">
+                          {technician.initials ??
+                            technician.name.slice(0, 2).toUpperCase()}
                         </div>
+
+                        <div>
+                          <strong>{technician.name}</strong>
+
+                          <div
+                            className={technicianStatusClass(
+                              technician.status,
+                            )}
+                          >
+                            <span />
+                            {formatStatus(technician.status)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button className="row-action">•••</button>
+                    </div>
+
+                    <div className="dispatch-current-job">
+                      <span className="dispatch-card-label">
+                        Current Assignment
+                      </span>
+
+                      <strong>
+                        {technician.current_ro ?? "No active RO"}
+                      </strong>
+
+                      <span>
+                        {technician.current_vehicle ??
+                          "No vehicle assigned"}
+                      </span>
+
+                      <small>
+                        {technician.current_operation ??
+                          "No active operation"}
+                      </small>
+
+                      <div className="dispatch-job-timer">
+                        <span>Time in status</span>
+
+                        <strong>
+                          {formatElapsed(technician.elapsed_minutes)}
+                        </strong>
                       </div>
                     </div>
 
-                    <button className="row-action">•••</button>
-                  </div>
+                    <div className="dispatch-next-job">
+                      <span className="dispatch-card-label">
+                        Next Assignment
+                      </span>
 
-                  <div className="dispatch-current-job">
-                    <span className="dispatch-card-label">
-                      Current Assignment
-                    </span>
+                      <strong>
+                        {technician.next_ro ?? "Unassigned"}
+                      </strong>
 
-                    <strong>{technician.currentRo}</strong>
-                    <span>{technician.vehicle}</span>
-                    <small>{technician.operation}</small>
-
-                    <div className="dispatch-job-timer">
-                      <span>Time in status</span>
-                      <strong>{technician.elapsed}</strong>
+                      <span>
+                        {technician.next_vehicle ??
+                          "Needs next assignment"}
+                      </span>
                     </div>
-                  </div>
 
-                  <div className="dispatch-next-job">
-                    <span className="dispatch-card-label">
-                      Next Assignment
-                    </span>
-
-                    <strong>{technician.nextRo}</strong>
-                    <span>{technician.nextVehicle}</span>
-                  </div>
-
-                  <button className="dispatch-manage-button">
-                    Manage Technician
-                  </button>
-                </article>
-              ))}
+                    <button className="dispatch-manage-button">
+                      Manage Technician
+                    </button>
+                  </article>
+                ))
+              )}
             </div>
           </div>
         </section>
