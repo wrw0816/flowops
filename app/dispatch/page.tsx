@@ -218,10 +218,10 @@ export default async function DispatchPage() {
               Technicians
             </a>
 
-            <a className="nav-item" href="#">
-              <span>▥</span>
-              TV Mode
-            </a>
+            <Link className="nav-item" href="/tv">
+  <span>▥</span>
+  TV Mode
+</Link>
 
             <a className="nav-item" href="#">
               <span>⌁</span>
@@ -270,9 +270,12 @@ export default async function DispatchPage() {
               Live
             </div>
 
-            <button className="secondary-button">
-              TV Mode
-            </button>
+            <Link
+  className="secondary-button button-link"
+  href="/tv"
+>
+  TV Mode
+</Link>
 
             <Link
               className="primary-button button-link"

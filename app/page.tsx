@@ -145,10 +145,10 @@ export default function Home() {
               Technicians
             </a>
 
-            <a className="nav-item" href="#">
-              <span>▥</span>
-              TV Mode
-            </a>
+            <Link className="nav-item" href="/tv">
+  <span>▥</span>
+  TV Mode
+</Link>
 
             <a className="nav-item" href="#">
               <span>⌁</span>
@@ -191,7 +191,12 @@ export default function Home() {
               Live
             </div>
 
-            <button className="secondary-button">Open TV Mode</button>
+            <Link
+  className="secondary-button button-link"
+  href="/tv"
+>
+  Open TV Mode
+</Link>
 
             <Link
               className="primary-button button-link"

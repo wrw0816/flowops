@@ -147,10 +147,10 @@ export default async function TechniciansPage() {
               Technicians
             </Link>
 
-            <a className="nav-item" href="#">
-              <span>▥</span>
-              TV Mode
-            </a>
+            <Link className="nav-item" href="/tv">
+  <span>▥</span>
+  TV Mode
+</Link>
 
             <a className="nav-item" href="#">
               <span>⌁</span>
