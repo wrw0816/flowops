@@ -2787,3 +2787,25 @@ tbody tr:last-child td {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.appointment-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 14px;
+  align-items: start;
+}
+
+.appointment-detail-main,
+.appointment-detail-sidebar {
+  display: grid;
+  gap: 14px;
+}
+
+.appointment-convert-button {
+  width: 100%;
+}
+
+@media (max-width: 1050px) {
+  .appointment-detail-layout {
+    grid-template-columns: 1fr;
+  }
+}
