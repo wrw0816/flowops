@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveShopId } from "@/lib/shop-context";
+import { getServerTimestamp } from "@/lib/server-time";
 
 type RepairOrderStatus =
   | "scheduled"
@@ -21,6 +23,13 @@ type TechnicianStatus =
   | "waiting"
   | "available"
   | "off";
+
+type Shop = {
+  id: string;
+  name: string;
+  shop_code: string | null;
+  location_name: string | null;
+};
 
 type RepairOrder = {
   id: string;
@@ -103,7 +112,10 @@ function differenceInMinutes(
   return Math.floor((end - start) / 60000);
 }
 
-function minutesSince(value: string | null) {
+function minutesSince(
+  value: string | null,
+  currentTimestamp: number,
+) {
   if (!value) {
     return 0;
   }
@@ -116,7 +128,7 @@ function minutesSince(value: string | null) {
 
   return Math.max(
     0,
-    Math.floor((Date.now() - timestamp) / 60000),
+    Math.floor((currentTimestamp - timestamp) / 60000),
   );
 }
 
@@ -215,12 +227,20 @@ function bottleneckSeverity(
 
 export default async function AnalyticsPage() {
   const supabase = await createClient();
+  const shopId = getActiveShopId();
+  const currentTimestamp = getServerTimestamp();
 
   const [
+    { data: shopData, error: shopError },
     { data: repairOrderData, error: repairOrderError },
     { data: technicianData, error: technicianError },
     { data: eventData, error: eventError },
   ] = await Promise.all([
+    supabase
+      .from("shops")
+      .select("id, name, shop_code, location_name")
+      .eq("id", shopId)
+      .single(),
     supabase
       .from("repair_orders")
       .select(`
@@ -235,6 +255,7 @@ export default async function AnalyticsPage() {
         completed_at,
         assigned_technician_id
       `)
+      .eq("shop_id", shopId)
       .order("created_at", { ascending: false })
       .limit(500),
 
@@ -250,6 +271,7 @@ export default async function AnalyticsPage() {
         status_changed_at,
         active
       `)
+      .eq("shop_id", shopId)
       .order("display_order", { ascending: true }),
 
     supabase
@@ -260,9 +282,18 @@ export default async function AnalyticsPage() {
         technician_id,
         created_at
       `)
+      .eq("shop_id", shopId)
       .order("created_at", { ascending: false })
       .limit(1000),
   ]);
+
+  if (shopError || !shopData) {
+    throw new Error(
+      `Unable to load shop settings: ${
+        shopError?.message ?? "Shop not found"
+      }`,
+    );
+  }
 
   if (repairOrderError) {
     throw new Error(
@@ -281,6 +312,8 @@ export default async function AnalyticsPage() {
       `Unable to load dispatch history: ${eventError.message}`,
     );
   }
+
+  const shop = shopData as Shop;
 
   const repairOrders =
     (repairOrderData ?? []) as RepairOrder[];
@@ -414,7 +447,7 @@ export default async function AnalyticsPage() {
     )
     .map((technician) =>
       technician.status_changed_at
-        ? minutesSince(technician.status_changed_at)
+        ? minutesSince(technician.status_changed_at, currentTimestamp)
         : technician.elapsed_minutes,
     );
 
@@ -426,7 +459,7 @@ export default async function AnalyticsPage() {
     )
     .map((technician) =>
       technician.status_changed_at
-        ? minutesSince(technician.status_changed_at)
+        ? minutesSince(technician.status_changed_at, currentTimestamp)
         : technician.elapsed_minutes,
     );
 
@@ -445,6 +478,7 @@ export default async function AnalyticsPage() {
       .map((repairOrder) => {
         const minutes = minutesSince(
           statusBottleneckStart(repairOrder),
+          currentTimestamp,
         );
 
         return {
@@ -472,7 +506,7 @@ export default async function AnalyticsPage() {
       )
       .map((technician) => {
         const minutes = technician.status_changed_at
-          ? minutesSince(technician.status_changed_at)
+          ? minutesSince(technician.status_changed_at, currentTimestamp)
           : technician.elapsed_minutes;
 
         return {
@@ -580,25 +614,35 @@ export default async function AnalyticsPage() {
               <span>⌁</span>
               Analytics
             </Link>
+
+            <Link
+              className="nav-item"
+              href="/production"
+            >
+              <span>◎</span>
+              Production
+            </Link>
           </nav>
         </div>
 
         <div className="sidebar-bottom">
-          <a className="nav-item" href="#">
+          <Link className="nav-item" href="/settings">
             <span>⚙</span>
             Shop Settings
-          </a>
+          </Link>
 
           <div className="shop-card">
-            <div className="shop-icon">AA</div>
+            <div className="shop-icon">
+              {shop.shop_code ?? "AA"}
+            </div>
 
             <div>
               <div className="shop-name">
-                Alderman Automotive
+                {shop.name}
               </div>
 
               <div className="shop-location">
-                Primary location
+                {shop.location_name ?? "Primary location"}
               </div>
             </div>
           </div>

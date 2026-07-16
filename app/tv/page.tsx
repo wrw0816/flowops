@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveShopId } from "@/lib/shop-context";
+import { getServerTimestamp } from "@/lib/server-time";
 import AutoRefresh from "./AutoRefresh";
 
 type TechnicianStatus =
@@ -48,7 +50,10 @@ function formatElapsed(minutes: number) {
     : `${hours}h`;
 }
 
-function formatWaitingTime(waitingSince: string) {
+function formatWaitingTime(
+  waitingSince: string,
+  currentTimestamp: number,
+) {
   const waitingSinceTimestamp = new Date(waitingSince).getTime();
 
   if (Number.isNaN(waitingSinceTimestamp)) {
@@ -57,7 +62,9 @@ function formatWaitingTime(waitingSince: string) {
 
   const elapsedMinutes = Math.max(
     0,
-    Math.floor((Date.now() - waitingSinceTimestamp) / 60000),
+    Math.floor(
+      (currentTimestamp - waitingSinceTimestamp) / 60000,
+    ),
   );
 
   return formatElapsed(elapsedMinutes);
@@ -101,6 +108,8 @@ function priorityLabel(priority: RepairOrder["priority"]) {
 
 export default async function TvModePage() {
   const supabase = await createClient();
+  const shopId = getActiveShopId();
+  const currentTimestamp = getServerTimestamp();
 
   const [
     { data: technicianData, error: technicianError },
@@ -124,6 +133,7 @@ export default async function TvModePage() {
         active,
         display_order
       `)
+      .eq("shop_id", shopId)
       .eq("active", true)
       .order("display_order", { ascending: true }),
 
@@ -139,14 +149,14 @@ export default async function TvModePage() {
         waiting_since,
         promised_at
       `)
+      .eq("shop_id", shopId)
       .eq("status", "waiting_dispatch")
       .order("waiting_since", { ascending: true }),
 
     supabase
       .from("shops")
       .select("name, daily_labor_goal")
-      .eq("name", "Alderman Automotive")
-      .limit(1)
+      .eq("id", shopId)
       .single(),
   ]);
 
@@ -218,7 +228,7 @@ export default async function TvModePage() {
           <div>
             <div className="tv-brand-name">FlowOps</div>
             <div className="tv-shop-name">
-              {shopData?.name ?? "Alderman Automotive"}
+              {shopData?.name ?? "FlowOps Shop"}
             </div>
           </div>
         </div>
@@ -425,6 +435,7 @@ export default async function TvModePage() {
                     <strong>
                       {formatWaitingTime(
                         repairOrder.waiting_since,
+                        currentTimestamp,
                       )}
                     </strong>
                   </div>
