@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import ShopSettingsForm from "./ShopSettingsForm";
 import { getActiveShopId } from "@/lib/shop-context";
-import AppSidebar from "@/components/AppSidebar";
+import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type Shop = {
   id: string;
@@ -60,21 +61,12 @@ export default async function SettingsPage() {
   const shop = data as Shop;
 
   return (
-    <main className="app-shell">
-      <AppSidebar activePage="settings" />
-
-      <section className="content">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Administration</p>
-            <h1>Shop Settings</h1>
-
-            <p className="page-description">
-              Configure operating hours, production goals and
-              alert thresholds.
-            </p>
-          </div>
-        </header>
+  <AppShell activePage="appointments">
+        <PageHeader
+  eyebrow="Administration"
+  title="Shop Settings"
+  description="Configure shop identity, operating hours, production goals and alert thresholds."
+/>
 
         <ShopSettingsForm
           initialValues={{
@@ -109,7 +101,6 @@ export default async function SettingsPage() {
             ),
           }}
         />
-      </section>
-    </main>
+    </AppShell>
   );
 }

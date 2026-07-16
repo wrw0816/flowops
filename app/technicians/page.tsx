@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type TechnicianStatus = "working" | "waiting" | "available" | "off";
 
@@ -106,26 +107,28 @@ export default async function TechniciansPage() {
 
   return (
   <AppShell activePage="appointments">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Team Management</p>
-            <h1>Technicians</h1>
+        <PageHeader
+  eyebrow="Team Management"
+  title="Technicians"
+  description="Monitor technician availability, workload and current status."
+  actions={
+    <>
+      <Link
+        className="secondary-button button-link"
+        href="/dispatch"
+      >
+        View Dispatch
+      </Link>
 
-            <p className="page-description">
-              Manage technician availability, workload and shop
-              assignments.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <Link
-              className="primary-button button-link"
-              href="/technicians/new"
-            >
-              + Add Technician
-            </Link>
-          </div>
-        </header>
+      <Link
+        className="primary-button button-link"
+        href="/technicians/new"
+      >
+        + Add Technician
+      </Link>
+    </>
+  }
+/>
 
         <section className="technician-summary-grid">
           <article className="technician-summary-card">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type DispatchEventType =
   | "created"
@@ -194,25 +195,19 @@ export default async function ActivityPage() {
 
   return (
   <AppShell activePage="activity">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Operational History</p>
-            <h1>Dispatch Activity</h1>
-
-            <p className="page-description">
-              Review assignments, status changes and completed work.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <Link
-              className="secondary-button button-link"
-              href="/dispatch"
-            >
-              Open Dispatch Board
-            </Link>
-          </div>
-        </header>
+        <PageHeader
+  eyebrow="Operational History"
+  title="Dispatch Activity"
+  description="Review assignments, status changes and completed work."
+  actions={
+    <Link
+      className="secondary-button button-link"
+      href="/dispatch"
+    >
+      Open Dispatch Board
+    </Link>
+  }
+/>
 
         <section className="activity-summary-grid">
           <article className="activity-summary-card">

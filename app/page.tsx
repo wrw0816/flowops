@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveShopId } from "@/lib/shop-context";
 import { getServerTimestamp } from "@/lib/server-time";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type TechnicianStatus =
   | "working"
@@ -600,41 +601,33 @@ export default async function Home() {
 
   return (
   <AppShell activePage="command-center"> 
-          <header className="topbar">
-          <div>
-            <p className="eyebrow">
-              {formatDateHeading()}
-            </p>
+          <PageHeader
+  eyebrow={formatDateHeading()}
+  title="Shop Command Center"
+  description="Live workload, technician flow and production pace."
+  actions={
+    <>
+      <div className="live-indicator">
+        <span className="live-dot" />
+        Live
+      </div>
 
-            <h1>Shop Command Center</h1>
+      <Link
+        className="secondary-button button-link"
+        href="/tv"
+      >
+        Open TV Mode
+      </Link>
 
-            <p className="page-description">
-              Live workload, technician flow and
-              production pace.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <div className="live-indicator">
-              <span className="live-dot" />
-              Live
-            </div>
-
-            <Link
-              className="secondary-button button-link"
-              href="/tv"
-            >
-              Open TV Mode
-            </Link>
-
-            <Link
-              className="primary-button button-link"
-              href="/repair-orders/new"
-            >
-              + Add Repair Order
-            </Link>
-          </div>
-        </header>
+      <Link
+        className="primary-button button-link"
+        href="/repair-orders/new"
+      >
+        + Add Repair Order
+      </Link>
+    </>
+  }
+/>
 
         <section className="metric-grid">
           <article className="metric-card">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type AppointmentStatus =
   | "scheduled"
@@ -133,25 +134,19 @@ export default async function AppointmentsPage() {
 
   return (
   <AppShell activePage="appointments">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Today&apos;s Schedule</p>
-            <h1>Appointments</h1>
-
-            <p className="page-description">
-              See upcoming arrivals, shop load and check-in status.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <Link
-              className="primary-button button-link"
-              href="/appointments/new"
-            >
-              + Add Appointment
-            </Link>
-          </div>
-        </header>
+        <PageHeader
+  eyebrow="Today's Schedule"
+  title="Appointments"
+  description="See upcoming arrivals, shop load and check-in status."
+  actions={
+    <Link
+      className="primary-button button-link"
+      href="/appointments/new"
+    >
+      + Add Appointment
+    </Link>
+  }
+/>
 
         <section className="appointment-summary-grid">
           <article className="appointment-summary-card">

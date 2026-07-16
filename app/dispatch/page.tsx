@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import AssignmentForm from "./AssignmentForm";
 import { getServerTimestamp } from "@/lib/server-time";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type Technician = {
   id: string;
@@ -186,45 +187,40 @@ const atRiskCount = queue.filter((repairOrder) => {
 }).length;
  return (
   <AppShell activePage="dispatch">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Live Shop Flow</p>
-            <h1>Dispatch Board</h1>
+        <PageHeader
+  eyebrow="Live Shop Flow"
+  title="Dispatch Board"
+  description="Assign work, manage technician load and keep the shop moving."
+  actions={
+    <>
+      <div className="live-indicator">
+        <span className="live-dot" />
+        Live
+      </div>
 
-            <p className="page-description">
-              Assign work, monitor technician flow and eliminate
-              idle time.
-            </p>
-          </div>
+      <Link
+        className="secondary-button button-link"
+        href="/activity"
+      >
+        View Activity
+      </Link>
 
-          <div className="topbar-actions">
-            <div className="live-indicator">
-              <span className="live-dot" />
-              Live
-            </div>
+      <Link
+        className="secondary-button button-link"
+        href="/tv"
+      >
+        TV Mode
+      </Link>
 
-             <Link
-  className="secondary-button button-link"
-  href="/activity"
->
-  View Activity
-</Link>
-
-            <Link
-  className="secondary-button button-link"
-  href="/tv"
->
-  TV Mode
-</Link>
-
-            <Link
-              className="primary-button button-link"
-              href="/repair-orders/new"
-            >
-              + Add Repair Order
-            </Link>
-          </div>
-        </header>
+      <Link
+        className="primary-button button-link"
+        href="/repair-orders/new"
+      >
+        + Add Repair Order
+      </Link>
+    </>
+  }
+/>
 
         <section className="dispatch-summary">
           <article className="dispatch-summary-card">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type RepairOrder = {
   id: string;
@@ -116,24 +117,19 @@ export default async function RepairOrdersPage() {
 
   return (
   <AppShell activePage="repair-orders">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">Repair Order Pipeline</p>
-            <h1>Repair Orders</h1>
-            <p className="page-description">
-              Track every RO from check-in through delivery.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <Link
-              className="primary-button button-link"
-              href="/repair-orders/new"
-            >
-              + Add Repair Order
-            </Link>
-          </div>
-        </header>
+        <PageHeader
+  eyebrow="Workflow Management"
+  title="Repair Orders"
+  description="Review active work, update status and manage each repair order."
+  actions={
+    <Link
+      className="primary-button button-link"
+      href="/repair-orders/new"
+    >
+      + Add Repair Order
+    </Link>
+  }
+/>
 
         <section className="repair-order-summary">
           <article className="repair-order-summary-card">

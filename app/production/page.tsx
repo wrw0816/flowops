@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import ProductionEntryForm from "./ProductionEntryForm";
 import { getActiveShopId } from "@/lib/shop-context";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type Shop = {
   id: string;
@@ -57,14 +58,6 @@ function formatPercent(value: number) {
   }
 
   return `${Math.round(value)}%`;
-}
-
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "America/Indiana/Indianapolis",
-  }).format(new Date(value));
 }
 
 function getIndianapolisHour() {
@@ -365,33 +358,35 @@ export default async function ProductionPage() {
 
   return (
   <AppShell activePage="production">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">
-              Unrealized Labor Engine
-            </p>
+        <PageHeader
+  eyebrow="Daily Performance"
+  title="Production Dashboard"
+  description="Track today's production, labor performance and progress toward shop goals."
+  actions={
+    <>
+      <Link
+        className="secondary-button button-link"
+        href="/analytics"
+      >
+        View Analytics
+      </Link>
 
-            <h1>Production Dashboard</h1>
+      <Link
+        className="secondary-button button-link"
+        href="/dispatch"
+      >
+        Open Dispatch
+      </Link>
 
-            <p className="page-description">
-              Track today&apos;s pace, projected finish and
-              recoverable labor opportunity.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <span className="production-updated">
-              Updated {formatTime(production.updated_at)}
-            </span>
-
-            <Link
-              className="secondary-button button-link"
-              href="/analytics"
-            >
-              View Analytics
-            </Link>
-          </div>
-        </header>
+      <Link
+        className="primary-button button-link"
+        href="/settings"
+      >
+        Production Goals
+      </Link>
+    </>
+  }
+/>
 
         <section className="production-hero-grid">
           <article className="production-hero-card">

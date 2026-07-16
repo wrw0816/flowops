@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveShopId } from "@/lib/shop-context";
 import { getServerTimestamp } from "@/lib/server-time";
 import AppShell from "@/components/AppShell";
+import PageHeader from "@/components/PageHeader";
 
 type RepairOrderStatus =
   | "scheduled"
@@ -519,36 +520,28 @@ export default async function AnalyticsPage() {
 
   return (
   <AppShell activePage="analytics">
-    <header className="topbar">
-          <div>
-            <p className="eyebrow">
-              Dispatch Performance
-            </p>
+    <PageHeader
+  eyebrow="Dispatch Performance"
+  title="Operations Analytics"
+  description="Measure shop movement, assignment speed and current bottlenecks."
+  actions={
+    <>
+      <Link
+        className="secondary-button button-link"
+        href="/activity"
+      >
+        View Activity
+      </Link>
 
-            <h1>Operations Analytics</h1>
-
-            <p className="page-description">
-              Measure shop movement, assignment speed and
-              current bottlenecks.
-            </p>
-          </div>
-
-          <div className="topbar-actions">
-            <Link
-              className="secondary-button button-link"
-              href="/activity"
-            >
-              View Activity
-            </Link>
-
-            <Link
-              className="secondary-button button-link"
-              href="/dispatch"
-            >
-              Open Dispatch
-            </Link>
-          </div>
-        </header>
+      <Link
+        className="secondary-button button-link"
+        href="/dispatch"
+      >
+        Open Dispatch
+      </Link>
+    </>
+  }
+/>
 
         <section className="analytics-primary-grid">
           <article className="analytics-primary-card">
