@@ -3655,3 +3655,78 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 }
+/* SHARED METRIC CARD */
+
+.metric-component {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 112px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  box-shadow: 0 2px 8px rgba(18, 24, 38, 0.04);
+}
+
+.metric-component-label {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+}
+
+.metric-component-value {
+  color: #161a22;
+  font-size: 23px;
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+}
+
+.metric-component-detail {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.metric-component-positive .metric-component-value {
+  color: var(--green);
+}
+
+.metric-component-warning .metric-component-value {
+  color: #b87500;
+}
+
+.metric-component-danger .metric-component-value {
+  color: var(--red);
+}
+
+.metric-component-progress {
+  height: 5px;
+  margin-top: auto;
+  overflow: hidden;
+  background: #e8eaed;
+  border-radius: 999px;
+}
+
+.metric-component-progress-bar {
+  height: 100%;
+  background: var(--red);
+  border-radius: 999px;
+}
+
+.metric-component-positive
+  .metric-component-progress-bar {
+  background: var(--green);
+}
+
+.metric-component-warning
+  .metric-component-progress-bar {
+  background: #d28a00;
+}
+
+.metric-component-danger
+  .metric-component-progress-bar {
+  background: var(--red);
+}

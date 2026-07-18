@@ -4,6 +4,8 @@ import { getActiveShopId } from "@/lib/shop-context";
 import { getServerTimestamp } from "@/lib/server-time";
 import AppShell from "@/components/AppShell";
 import PageHeader from "@/components/PageHeader";
+import MetricCard from "@/components/MetricCard";
+import Panel from "@/components/Panel";
 
 type TechnicianStatus =
   | "working"
@@ -629,142 +631,68 @@ export default async function Home() {
   }
 />
 
-        <section className="metric-grid">
-          <article className="metric-card">
-            <div className="metric-label">
-              Labor Hours Closed
-            </div>
+  <section className="metric-grid">
+  <MetricCard
+    label="Labor Hours Closed"
+    value={`${laborHoursClosed.toFixed(1)} of ${laborGoal.toFixed(1)}`}
+    detail={`${Math.round(goalPercentage)}% of goal · ${laborHoursRemaining.toFixed(1)} remaining`}
+    progress={goalPercentage}
+    tone={
+      goalPercentage >= 100
+        ? "positive"
+        : goalPercentage >= 75
+          ? "warning"
+          : "danger"
+    }
+  />
 
-            <div className="metric-row">
-              <strong>
-                {laborHoursClosed.toFixed(1)}
-              </strong>
+  <MetricCard
+    label="Projected Finish"
+    value={`${projectedLaborHours.toFixed(1)} hours`}
+    detail={
+      projectedHourShortfall > 0
+        ? `${projectedHourShortfall.toFixed(1)}-hour gap at current pace`
+        : "Daily labor goal is projected"
+    }
+    progress={projectedGoalPercentage}
+    tone={
+      projectedHourShortfall > 0
+        ? "warning"
+        : "positive"
+    }
+  />
 
-              <span>
-                of {laborGoal.toFixed(1)}
-              </span>
-            </div>
+  <MetricCard
+    label="Waiting Dispatch"
+    value={`${dispatchQueue.length} vehicles`}
+    detail={
+      dispatchQueue.length > 0
+        ? `${waitingDispatchHours.toFixed(1)} labor hours · oldest wait ${formatWaitingTime(
+            dispatchQueue[0].waiting_since,
+            currentTimestamp,
+          )}`
+        : "No vehicles waiting for dispatch"
+    }
+    tone={
+      dispatchQueue.length > 0
+        ? "danger"
+        : "positive"
+    }
+  />
 
-            <div className="progress-track">
-              <div
-                className="progress-bar progress-red"
-                style={{
-                  width: `${goalPercentage}%`,
-                }}
-              />
-            </div>
-
-            <div className="metric-footer">
-              <span>
-                {Math.round(goalPercentage)}% of goal
-              </span>
-
-              <span className="negative">
-                {laborHoursRemaining.toFixed(1)}{" "}
-                remaining
-              </span>
-            </div>
-          </article>
-
-          <article className="metric-card">
-            <div className="metric-label">
-              Projected Finish
-            </div>
-
-            <div className="metric-row">
-              <strong>
-                {projectedLaborHours.toFixed(1)}
-              </strong>
-
-              <span>hours</span>
-            </div>
-
-            <div className="progress-track">
-              <div
-                className="progress-bar progress-yellow"
-                style={{
-                  width: `${projectedGoalPercentage}%`,
-                }}
-              />
-            </div>
-
-            <div className="metric-footer">
-              <span>Current pace</span>
-
-              <span
-                className={
-                  projectedHourShortfall > 0
-                    ? "warning"
-                    : "positive"
-                }
-              >
-                {projectedHourShortfall > 0
-                  ? `${projectedHourShortfall.toFixed(
-                      1,
-                    )}-hour gap`
-                  : "Goal projected"}
-              </span>
-            </div>
-          </article>
-
-          <article className="metric-card">
-            <div className="metric-label">
-              Waiting Dispatch
-            </div>
-
-            <div className="metric-row">
-              <strong>
-                {dispatchQueue.length}
-              </strong>
-
-              <span>vehicles</span>
-            </div>
-
-            <div className="metric-footer metric-footer-spaced">
-              <span>
-                {waitingDispatchHours.toFixed(1)}{" "}
-                labor hours
-              </span>
-
-              <span className="negative">
-                {dispatchQueue.length > 0
-                  ? formatWaitingTime(
-                      dispatchQueue[0].waiting_since,
-                      currentTimestamp,
-                    )
-                  : "No wait"}
-              </span>
-            </div>
-          </article>
-
-          <article className="metric-card">
-            <div className="metric-label">
-              Unrealized Labor
-            </div>
-
-            <div className="metric-row">
-              <strong>
-                {formatCurrency(
-                  unrealizedLaborSales,
-                )}
-              </strong>
-            </div>
-
-            <div className="metric-footer metric-footer-spaced">
-              <span>
-                {projectedHourShortfall.toFixed(1)}{" "}
-                projected hours
-              </span>
-
-              <span className="negative">
-                {formatCurrency(
-                  unrealizedLaborGrossProfit,
-                )}{" "}
-                GP
-              </span>
-            </div>
-          </article>
-        </section>
+  <MetricCard
+    label="Unrealized Labor"
+    value={formatCurrency(unrealizedLaborSales)}
+    detail={`${projectedHourShortfall.toFixed(1)} projected hours · ${formatCurrency(
+      unrealizedLaborGrossProfit,
+    )} estimated GP`}
+    tone={
+      unrealizedLaborSales > 0
+        ? "danger"
+        : "positive"
+    }
+  />
+</section>      
 
         <section className="main-grid">
           <div className="panel technician-panel">
@@ -894,127 +822,105 @@ export default async function Home() {
           </div>
 
           <div className="right-column">
-            <div className="panel alert-panel">
-              <div className="panel-heading">
-                <div>
-                  <h2>Action Required</h2>
+            <Panel
+  className="alert-panel"
+  title="Action Required"
+  description="Highest-impact issues right now"
+  actions={
+    <span className="alert-count">
+      {topActions.length}
+    </span>
+  }
+>
+  <div className="alert-list">
+    {topActions.map((action) => (
+      <Link
+        key={action.title}
+        href={action.href}
+        className={`alert-item alert-${action.type}`}
+      >
+        <div className="alert-icon">
+          {action.type === "danger"
+            ? "!"
+            : action.type === "warning"
+              ? "◷"
+              : "↗"}
+        </div>
 
-                  <p>
-                    Highest-impact issues right now
-                  </p>
-                </div>
+        <div>
+          <strong>{action.title}</strong>
 
-                <span className="alert-count">
-                  {topActions.length}
-                </span>
-              </div>
+          <p>{action.detail}</p>
+        </div>
+      </Link>
+    ))}
 
-              <div className="alert-list">
-                {topActions.map(
-                  (action) => (
-                    <Link
-                      className={`alert-item alert-${action.type}`}
-                      href={action.href}
-                      key={action.title}
-                    >
-                      <div className="alert-icon">
-                        {action.type === "danger"
-                          ? "!"
-                          : action.type ===
-                              "warning"
-                            ? "◷"
-                            : "↗"}
-                      </div>
+    {topActions.length === 0 ? (
+      <div className="appointments-empty">
+        No urgent actions detected.
+      </div>
+    ) : null}
+  </div>
+</Panel>
 
-                      <div>
-                        <strong>
-                          {action.title}
-                        </strong>
+            <Panel
+  title="Upcoming"
+  description="Next scheduled arrivals"
+  actions={
+    <Link
+      className="text-button"
+      href="/appointments"
+    >
+      View all →
+    </Link>
+  }
+>
+  <div className="appointment-list">
+    {appointments
+      .slice(0, 4)
+      .map((appointment) => (
+        <Link
+          key={appointment.id}
+          href={`/appointments/${appointment.id}`}
+          className="appointment-row"
+        >
+          <div className="appointment-time">
+            {formatTime(
+              appointment.appointment_at,
+            )}
+          </div>
 
-                        <p>
-                          {action.detail}
-                        </p>
-                      </div>
-                    </Link>
-                  ),
-                )}
+          <div className="appointment-details">
+            <strong>
+              {appointment.vehicle}
+            </strong>
 
-                {topActions.length === 0 ? (
-                  <div className="appointments-empty">
-                    No urgent actions detected.
-                  </div>
-                ) : null}
-              </div>
-            </div>
+            <span>
+              {appointment.service_description}
+            </span>
+          </div>
 
-            <div className="panel">
-              <div className="panel-heading">
-                <div>
-                  <h2>Upcoming</h2>
+          <span
+            className={
+              appointment.status === "arrived"
+                ? "appointment-status arrived"
+                : "appointment-status"
+            }
+          >
+            {formatAppointmentStatus(
+              appointment.status,
+            )}
+          </span>
+        </Link>
+      ))}
 
-                  <p>
-                    Next scheduled arrivals
-                  </p>
-                </div>
-
-                <Link
-                  className="text-button"
-                  href="/appointments"
-                >
-                  View all →
-                </Link>
-              </div>
-
-              <div className="appointment-list">
-                {appointments
-                  .slice(0, 4)
-                  .map((appointment) => (
-                    <Link
-                      className="appointment-row"
-                      href={`/appointments/${appointment.id}`}
-                      key={appointment.id}
-                    >
-                      <div className="appointment-time">
-                        {formatTime(
-                          appointment.appointment_at,
-                        )}
-                      </div>
-
-                      <div className="appointment-details">
-                        <strong>
-                          {appointment.vehicle}
-                        </strong>
-
-                        <span>
-                          {
-                            appointment.service_description
-                          }
-                        </span>
-                      </div>
-
-                      <span
-                        className={
-                          appointment.status ===
-                          "arrived"
-                            ? "appointment-status arrived"
-                            : "appointment-status"
-                        }
-                      >
-                        {formatAppointmentStatus(
-                          appointment.status,
-                        )}
-                      </span>
-                    </Link>
-                  ))}
-
-                {appointments.length === 0 ? (
-                  <div className="appointments-empty">
-                    No remaining appointments
-                    today.
-                  </div>
-                ) : null}
-              </div>
-            </div>
+    {appointments.length === 0 ? (
+      <div className="appointments-empty">
+        No remaining appointments today.
+      </div>
+    ) : null}
+  </div>
+</Panel>
           </div>
         </section>
 
@@ -1120,87 +1026,66 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="production-command-summary">
-          <article>
-            <span>Labor Sales</span>
-            <strong>
-              {formatCurrency(laborSales)}
-            </strong>
-            <small>
-              Projected{" "}
-              {formatCurrency(
-                projectedLaborSales,
-              )}
-            </small>
-          </article>
+       <section className="production-command-summary">
+  <MetricCard
+    label="Labor Sales"
+    value={formatCurrency(laborSales)}
+    detail={`Projected ${formatCurrency(projectedLaborSales)}`}
+  />
 
-          <article>
-            <span>Sales Gap</span>
-            <strong
-              className={
-                projectedSalesShortfall > 0
-                  ? "negative"
-                  : "positive"
-              }
-            >
-              {formatCurrency(
-                projectedSalesShortfall,
-              )}
-            </strong>
-            <small>
-              Against{" "}
-              {formatCurrency(
-                laborSalesGoal,
-              )}{" "}
-              goal
-            </small>
-          </article>
+  <MetricCard
+    label="Sales Gap"
+    value={formatCurrency(projectedSalesShortfall)}
+    detail={`Against ${formatCurrency(laborSalesGoal)} goal`}
+    tone={
+      projectedSalesShortfall > 0
+        ? "danger"
+        : "positive"
+    }
+  />
 
-          <article>
-            <span>Hours at Risk</span>
-            <strong>
-              {totalHoursAtRisk.toFixed(1)}
-            </strong>
-            <small>
-              {formatCurrency(
-                recoverableSales,
-              )}{" "}
-              potential labor sales
-            </small>
-          </article>
+  <MetricCard
+    label="Hours at Risk"
+    value={totalHoursAtRisk.toFixed(1)}
+    detail={`${formatCurrency(
+      recoverableSales,
+    )} potential labor sales`}
+    tone={
+      totalHoursAtRisk > 0
+        ? "warning"
+        : "positive"
+    }
+  />
 
-          <article>
-            <span>Current Labor ARO</span>
-            <strong>
-              {formatCurrency(currentAro)}
-            </strong>
-            <small>
-              {repairOrdersClosed} closed ROs
-            </small>
-          </article>
+  <MetricCard
+    label="Current Labor ARO"
+    value={formatCurrency(currentAro)}
+    detail={`${repairOrdersClosed} closed ROs`}
+  />
 
-          <article>
-            <span>Recovery Pace Needed</span>
-            <strong>
-              {requiredHourlyRecovery.toFixed(
-                1,
-              )}
-            </strong>
-            <small>
-              Sold hours per remaining clock hour
-            </small>
-          </article>
+  <MetricCard
+    label="Recovery Pace Needed"
+    value={requiredHourlyRecovery.toFixed(1)}
+    detail="Sold hours per remaining clock hour"
+    tone={
+      requiredHourlyRecovery >
+      currentHourlyPace
+        ? "warning"
+        : "positive"
+    }
+  />
 
-          <article>
-            <span>Technicians Waiting</span>
-            <strong>
-              {waitingTechnicians.length}
-            </strong>
-            <small>
-              Approval, parts or information
-            </small>
-          </article>
-      </section>
+  <MetricCard
+    label="Technicians Waiting"
+    value={waitingTechnicians.length}
+    detail="Approval, parts or information"
+    tone={
+      waitingTechnicians.length > 0
+        ? "warning"
+        : "positive"
+    }
+  />
+</section> 
   </AppShell>
 );
 }

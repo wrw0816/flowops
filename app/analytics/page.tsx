@@ -4,6 +4,7 @@ import { getActiveShopId } from "@/lib/shop-context";
 import { getServerTimestamp } from "@/lib/server-time";
 import AppShell from "@/components/AppShell";
 import PageHeader from "@/components/PageHeader";
+import MetricCard from "@/components/MetricCard";
 
 type RepairOrderStatus =
   | "scheduled"
@@ -519,291 +520,270 @@ export default async function AnalyticsPage() {
     .slice(0, 10);
 
   return (
-  <AppShell activePage="analytics">
-    <PageHeader
-  eyebrow="Dispatch Performance"
-  title="Operations Analytics"
-  description="Measure shop movement, assignment speed and current bottlenecks."
-  actions={
-    <>
-      <Link
-        className="secondary-button button-link"
-        href="/activity"
-      >
-        View Activity
-      </Link>
+    <AppShell activePage="analytics">
+      <PageHeader
+        eyebrow="Dispatch Performance"
+        title="Operations Analytics"
+        description="Measure shop movement, assignment speed and current bottlenecks."
+        actions={
+          <>
+            <Link
+              className="secondary-button button-link"
+              href="/activity"
+            >
+              View Activity
+            </Link>
 
-      <Link
-        className="secondary-button button-link"
-        href="/dispatch"
-      >
-        Open Dispatch
-      </Link>
-    </>
-  }
-/>
+            <Link
+              className="secondary-button button-link"
+              href="/dispatch"
+            >
+              Open Dispatch
+            </Link>
+          </>
+        }
+      />
 
-        <section className="analytics-primary-grid">
-          <article className="analytics-primary-card">
-            <span>Average Dispatch Time</span>
+      <section className="analytics-primary-grid">
+  <MetricCard
+    label="Average Dispatch Time"
+    value={formatDuration(average(dispatchTimes))}
+    detail="Waiting dispatch to technician assignment"
+  />
 
-            <strong>
-              {formatDuration(average(dispatchTimes))}
-            </strong>
+  <MetricCard
+    label="Average Repair Cycle"
+    value={formatDuration(average(cycleTimes))}
+    detail="Work started to ready or closed"
+  />
 
-            <small>
-              Waiting dispatch to technician assignment
-            </small>
-          </article>
+  <MetricCard
+    label="Completed ROs"
+    value={completedRepairOrders.length}
+    detail="Ready for delivery or closed"
+    tone="positive"
+  />
 
-          <article className="analytics-primary-card">
-            <span>Average Repair Cycle</span>
+  <MetricCard
+    label="Returned to Dispatch"
+    value={returnToDispatchCount}
+    detail="ROs requiring another assignment"
+    tone="danger"
+  />
 
-            <strong>
-              {formatDuration(average(cycleTimes))}
-            </strong>
+  <MetricCard
+    label="Reassignments"
+    value={reassignmentCount}
+    detail="Technician changes recorded"
+    tone="warning"
+  />
 
-            <small>
-              Work started to ready or closed
-            </small>
-          </article>
+  <MetricCard
+    label="Average Available Time"
+    value={formatDuration(
+      average(technicianIdleMinutes),
+    )}
+    detail="Current idle technicians"
+  />
+</section>
 
-          <article className="analytics-primary-card">
-            <span>Completed ROs</span>
+      <section className="analytics-secondary-grid">
+  <MetricCard
+    label="Waiting Dispatch Hours"
+    value={waitingDispatchHours.toFixed(1)}
+    tone={
+      waitingDispatchHours > 0
+        ? "warning"
+        : "positive"
+    }
+  />
 
-            <strong className="positive">
-              {completedRepairOrders.length}
-            </strong>
+  <MetricCard
+    label="Waiting Approval Hours"
+    value={waitingApprovalHours.toFixed(1)}
+    tone={
+      waitingApprovalHours > 0
+        ? "warning"
+        : "positive"
+    }
+  />
 
-            <small>
-              Ready for delivery or closed
-            </small>
-          </article>
+  <MetricCard
+    label="Waiting Parts Hours"
+    value={waitingPartsHours.toFixed(1)}
+    tone={
+      waitingPartsHours > 0
+        ? "warning"
+        : "positive"
+    }
+  />
 
-          <article className="analytics-primary-card">
-            <span>Returned to Dispatch</span>
+  <MetricCard
+    label="Average Technician Wait"
+    value={formatDuration(
+      average(technicianWaitingMinutes),
+    )}
+    tone={
+      average(technicianWaitingMinutes) >= 30
+        ? "danger"
+        : average(technicianWaitingMinutes) >= 15
+          ? "warning"
+          : "positive"
+    }
+  />
 
-            <strong className="negative">
-              {returnToDispatchCount}
-            </strong>
+  <MetricCard
+    label="Open Repair Orders"
+    value={openRepairOrders.length}
+  />
 
-            <small>
-              ROs requiring another assignment
-            </small>
-          </article>
+  <MetricCard
+    label="Activity Events"
+    value={events.length}
+  />
+</section>
 
-          <article className="analytics-primary-card">
-            <span>Reassignments</span>
+      <section className="analytics-main-grid">
+              <section className="panel">
+                  <div className="panel-heading">
+                      <div>
+                          <h2>Technician Activity</h2>
 
-            <strong className="warning">
-              {reassignmentCount}
-            </strong>
-
-            <small>
-              Technician changes recorded
-            </small>
-          </article>
-
-          <article className="analytics-primary-card">
-            <span>Average Available Time</span>
-
-            <strong>
-              {formatDuration(
-                average(technicianIdleMinutes),
-              )}
-            </strong>
-
-            <small>
-              Current idle technicians
-            </small>
-          </article>
-        </section>
-
-        <section className="analytics-secondary-grid">
-          <article className="analytics-hour-card">
-            <span>Waiting Dispatch Hours</span>
-            <strong>
-              {waitingDispatchHours.toFixed(1)}
-            </strong>
-          </article>
-
-          <article className="analytics-hour-card">
-            <span>Waiting Approval Hours</span>
-            <strong>
-              {waitingApprovalHours.toFixed(1)}
-            </strong>
-          </article>
-
-          <article className="analytics-hour-card">
-            <span>Waiting Parts Hours</span>
-            <strong>
-              {waitingPartsHours.toFixed(1)}
-            </strong>
-          </article>
-
-          <article className="analytics-hour-card">
-            <span>Average Technician Wait</span>
-            <strong>
-              {formatDuration(
-                average(technicianWaitingMinutes),
-              )}
-            </strong>
-          </article>
-
-          <article className="analytics-hour-card">
-            <span>Open Repair Orders</span>
-            <strong>{openRepairOrders.length}</strong>
-          </article>
-
-          <article className="analytics-hour-card">
-            <span>Activity Events</span>
-            <strong>{events.length}</strong>
-          </article>
-        </section>
-
-        <section className="analytics-main-grid">
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Technician Activity</h2>
-
-                <p>
-                  Assignment and workflow events by
-                  technician
-                </p>
-              </div>
-            </div>
-
-            <div className="table-wrapper">
-              <table className="analytics-table">
-                <thead>
-                  <tr>
-                    <th>Technician</th>
-                    <th>Assignments</th>
-                    <th>Starts</th>
-                    <th>Completions</th>
-                    <th>Reassignments</th>
-                    <th>Completion Rate</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {technicianPerformance.map(
-                    (technician) => {
-                      const completionRate =
-                        technician.starts > 0
-                          ? Math.round(
-                              (technician.completions /
-                                technician.starts) *
-                                100,
-                            )
-                          : 0;
-
-                      return (
-                        <tr key={technician.id}>
-                          <td>
-                            <Link
-                              className="analytics-tech-link"
-                              href={`/technicians/${technician.id}`}
-                            >
-                              {technician.name}
-                            </Link>
-                          </td>
-
-                          <td>
-                            {technician.assignments}
-                          </td>
-
-                          <td>
-                            {technician.starts}
-                          </td>
-
-                          <td>
-                            {technician.completions}
-                          </td>
-
-                          <td>
-                            {technician.reassignments}
-                          </td>
-
-                          <td>
-                            <div className="analytics-rate">
-                              <div className="analytics-rate-track">
-                                <div
-                                  className="analytics-rate-bar"
-                                  style={{
-                                    width: `${Math.min(
-                                      100,
-                                      completionRate,
-                                    )}%`,
-                                  }}
-                                />
-                              </div>
-
-                              <strong>
-                                {completionRate}%
-                              </strong>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    },
-                  )}
-
-                  {technicianPerformance.length ===
-                  0 ? (
-                    <tr>
-                      <td colSpan={6}>
-                        No technician activity is
-                        available.
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <aside className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Current Bottlenecks</h2>
-
-                <p>
-                  Longest operational delays right now
-                </p>
-              </div>
-            </div>
-
-            <div className="analytics-bottleneck-list">
-              {bottlenecks.map((item) => (
-                <Link
-                  className={`analytics-bottleneck analytics-bottleneck-${item.severity}`}
-                  href={item.href}
-                  key={item.id}
-                >
-                  <div className="analytics-bottleneck-top">
-                    <strong>{item.title}</strong>
-
-                    <span>
-                      {formatDuration(item.minutes)}
-                    </span>
+                          <p>
+                              Assignment and workflow events by
+                              technician
+                          </p>
+                      </div>
                   </div>
 
-                  <p>{item.detail}</p>
+                  <div className="table-wrapper">
+                      <table className="analytics-table">
+                          <thead>
+                              <tr>
+                                  <th>Technician</th>
+                                  <th>Assignments</th>
+                                  <th>Starts</th>
+                                  <th>Completions</th>
+                                  <th>Reassignments</th>
+                                  <th>Completion Rate</th>
+                              </tr>
+                          </thead>
 
-                  <small>{item.status}</small>
-                </Link>
-              ))}
+                          <tbody>
+                              {technicianPerformance.map(
+                                  (technician) => {
+                                      const completionRate = technician.starts > 0
+                                          ? Math.round(
+                                              (technician.completions /
+                                                  technician.starts) *
+                                              100
+                                          )
+                                          : 0;
 
-              {bottlenecks.length === 0 ? (
-                <div className="analytics-empty">
-                  No active bottlenecks detected.
-                </div>
-              ) : null}
-            </div>
-          </aside>
-      </section>
+                                      return (
+                                          <tr key={technician.id}>
+                                              <td>
+                                                  <Link
+                                                      className="analytics-tech-link"
+                                                      href={`/technicians/${technician.id}`}
+                                                  >
+                                                      {technician.name}
+                                                  </Link>
+                                              </td>
+
+                                              <td>
+                                                  {technician.assignments}
+                                              </td>
+
+                                              <td>
+                                                  {technician.starts}
+                                              </td>
+
+                                              <td>
+                                                  {technician.completions}
+                                              </td>
+
+                                              <td>
+                                                  {technician.reassignments}
+                                              </td>
+
+                                              <td>
+                                                  <div className="analytics-rate">
+                                                      <div className="analytics-rate-track">
+                                                          <div
+                                                              className="analytics-rate-bar"
+                                                              style={{
+                                                                  width: `${Math.min(
+                                                                      100,
+                                                                      completionRate
+                                                                  )}%`,
+                                                              }} />
+                                                      </div>
+
+                                                      <strong>
+                                                          {completionRate}%
+                                                      </strong>
+                                                  </div>
+                                              </td>
+                                          </tr>
+                                      );
+                                  }
+                              )}
+
+                              {technicianPerformance.length ===
+                                  0 ? (
+                                  <tr>
+                                      <td colSpan={6}>
+                                          No technician activity is
+                                          available.
+                                      </td>
+                                  </tr>
+                              ) : null}
+                          </tbody>
+                      </table>
+                  </div>
+              </section>
+
+              <aside className="panel">
+                  <div className="panel-heading">
+                      <div>
+                          <h2>Current Bottlenecks</h2>
+
+                          <p>
+                              Longest operational delays right now
+                          </p>
+                      </div>
+                  </div>
+
+                  <div className="analytics-bottleneck-list">
+                      {bottlenecks.map((item) => (
+                          <Link
+                              className={`analytics-bottleneck analytics-bottleneck-${item.severity}`}
+                              href={item.href}
+                              key={item.id}
+                          >
+                              <div className="analytics-bottleneck-top">
+                                  <strong>{item.title}</strong>
+
+                                  <span>
+                                      {formatDuration(item.minutes)}
+                                  </span>
+                              </div>
+
+                              <p>{item.detail}</p>
+
+                              <small>{item.status}</small>
+                          </Link>
+                      ))}
+
+                      {bottlenecks.length === 0 ? (
+                          <div className="analytics-empty">
+                              No active bottlenecks detected.
+                          </div>
+                      ) : null}
+                  </div>
+              </aside>
+          </section>
     </AppShell>
   );
 }
